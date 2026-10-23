@@ -1,0 +1,139 @@
+[functions]
+# Tail branches found in the first validation pass:
+# 0x8225C0C8 and 0x825D579C -> 0x8225BCA0 (blr at 0x8225BCB0; next .pdata
+# entry is 0x8225BCB8).
+# 0x82564B7C -> 0x82564A40 (blr at 0x82564AB4; next .pdata entry is
+# 0x82564AB8).
+"0x8225BCA0" = { name = "sub_8225BCA0", size = 0x14 }
+"0x82564A40" = { name = "sub_82564A40", size = 0x78 }
+
+# First runtime trace reached this unregistered address through guest code.
+# The PPC bytes at 0x824DDEC8 are a 4-instruction leaf ending at 0x824DDED4;
+# the next .pdata function starts at 0x824DDED8.
+"0x824DDEC8" = { name = "sub_824DDEC8", size = 0x10 }
+
+# A later trap recorded LR=0x822CB24C, whose bctrl is at 0x822CB248 in the
+# .pdata function 0x822CB1E0. The target is another 4-instruction leaf ending
+# immediately before the .pdata function at 0x824DDFA0.
+"0x824DDF90" = { name = "sub_824DDF90", size = 0x10 }
+
+# Runtime LR=0x82736D78 identifies a bctrl at 0x82736D74 in .pdata function
+# 0x82736840. The target ends with a tail bctr at 0x827370D0; the next
+# .pdata function starts at 0x827370D8.
+"0x82736FE0" = { name = "sub_82736FE0", size = 0xF8 }
+
+# Runtime LR=0x82759A0C points to a bctrl at 0x82759A08. The target is a
+# two-instruction getter ending at 0x8225C124; the next observed code entry is
+# the adjacent method at 0x8225C128.
+"0x8225C120" = { name = "sub_8225C120", size = 0x8 }
+
+# Runtime LR=0x82738258 identifies a bctrl at 0x82738254. This target ends
+# with blr at 0x827384CC, before the next .pdata function at 0x827384D0.
+"0x827383D0" = { name = "sub_827383D0", size = 0x100 }
+
+# Runtime LR=0x82729028 identifies a bctrl at 0x82729024. The target is a
+# six-instruction PPC adjustor thunk ending in bctr at 0x827484B4; the next
+# .pdata function starts at 0x827484B8.
+"0x827484A0" = { name = "sub_827484A0", size = 0x18 }
+
+# Runtime LR=0x82731DA8 reaches this indirect target. The PPC routine ends at
+# bctr 0x8273193C; the following thunk begins at 0x82731940.
+"0x827318E8" = { name = "sub_827318E8", size = 0x58 }
+
+# Runtime LR=0x8274AA90 reaches this two-instruction adjustor thunk, which
+# branches to 0x827319C8; the next thunk begins at 0x827318D8.
+"0x827318D0" = { name = "sub_827318D0", size = 0x8 }
+
+# Runtime LR=0x82730808 reaches this adjustor thunk, which branches to
+# 0x8234E678; the next .pdata function starts at 0x8234ED38.
+"0x8234ED30" = { name = "sub_8234ED30", size = 0x8 }
+
+# Reached from the virtual call at LR=0x82238F80 after keyboard Start input.
+# The exact 4-instruction PPC adjustor thunk branches to the already generated
+# function at 0x82258700; the adjacent thunk begins at 0x825244A8.
+"0x82524498" = { name = "sub_82524498", size = 0x10 }
+
+# Runtime LR=0x822587C4 identifies the virtual call whose loaded target was
+# 0x8253A650. Validate this candidate 4-instruction thunk before retaining it.
+"0x8253A650" = { name = "sub_8253A650", size = 0x10 }
+
+# Runtime LR=0x82238F80 identifies a virtual call whose loaded target was
+# 0x8225B0E8. Its aligned extent is between generated thunks at 0x8225B0D8
+# and 0x8225B0F8; verify the decoded body before retaining this boundary.
+"0x8225B0E8" = { name = "sub_8225B0E8", size = 0x10 }
+
+# Runtime LR=0x824CA4AC identifies a virtual call whose loaded target was
+# 0x82537E50, between the generated thunks at 0x82537E40 and 0x82537E60.
+"0x82537E50" = { name = "sub_82537E50", size = 0x10 }
+
+# Runtime LR=0x822A87A8 identifies a virtual call whose loaded target was
+# 0x825DC960, between registered thunks at 0x825DC950 and 0x825DC970.
+"0x825DC960" = { name = "sub_825DC960", size = 0x10 }
+
+# Runtime LR=0x8229F8F0 identifies a virtual call whose loaded target was
+# 0x82299E48, in the gap before the next registered function at 0x82299E70.
+"0x82299E48" = { name = "sub_82299E48", size = 0x28 }
+
+# Runtime LR=0x82292544 identifies a virtual call whose loaded target was
+# 0x82292C78, between registered 16-byte adjustor thunks at 0x82292C68/88.
+"0x82292C78" = { name = "sub_82292C78", size = 0x10 }
+
+# Runtime LR=0x82510540 identifies a virtual call whose loaded target was
+# 0x8252FCF8, between registered functions at 0x8252FCE8 and 0x8252FD08.
+"0x8252FCF8" = { name = "sub_8252FCF8", size = 0x10 }
+
+# Runtime LR=0x82238F80 identifies a virtual call whose target 0x82247FA0 is
+# between registered adjustor thunks at 0x82247F90 and 0x82247FB0.
+"0x82247FA0" = { name = "sub_82247FA0", size = 0x10 }
+
+# Automated Start/A run reached a virtual call at LR=0x8223EF68; target
+# 0x82537E90 lies between registered 16-byte boundaries at 0x82537E80/A0.
+"0x82537E90" = { name = "sub_82537E90", size = 0x10 }
+
+# Manual run 20261021-173039-937 trapped at this virtual target.
+"0x82536F78" = { name = "sub_82536F78", size = 0x10 }
+
+# Manual run 20261021-174325-475 trapped at this target after reaching a scene.
+"0x82536FE8" = { name = "sub_82536FE8", size = 0x10 }
+
+# Manual run 20261021-180249-290 trapped at this target via vtable offset 60.
+"0x8252FDA8" = { name = "sub_8252FDA8", size = 0x10 }
+
+# Manual run 20261021-180554-377 trapped at this target via the same vtable
+# dispatch as 0x8252FDA8; it lies in the gap before 0x82537F00.
+"0x82537EE0" = { name = "sub_82537EE0", size = 0x20 }
+
+# Manual run 20261021-180733-183 trapped via vtable offset 32.
+"0x8264A728" = { name = "sub_8264A728", size = 0x18 }
+
+# Manual run 20261021-181020-606 trapped via vtable offset 160.
+"0x825E05F8" = { name = "sub_825E05F8", size = 0x18 }
+
+# Automatic run 20261021-181215-714 trapped at this vtable target.
+"0x82247F70" = { name = "sub_82247F70", size = 0x10 }
+
+# Manual run 20261021-173536-142 trapped at 0x82603520; the next function
+# starts at 0x82603528, so validate the 8-byte PPC gap before retaining it.
+"0x82603520" = { name = "sub_82603520", size = 0x8 }
+
+# Manual run 20261021-173814-673 trapped at this address, between 0x822714A8
+# and the next registered function at 0x822714C0.
+"0x822714B8" = { name = "sub_822714B8", size = 0x8 }
+
+# Run 20261021-174040-425 reached a scene, then trapped on this vtable target
+# after the second Start press; it lies between 0x8254A680 and 0x8254A6A0.
+"0x8254A690" = { name = "sub_8254A690", size = 0x10 }
+
+# Run 20261021-181459-613 trapped at 0x825E04F0 (LR=0x826389D8); it belongs to a table
+# of 0x18-byte virtual-dispatch wrappers at 0x825E0478-0x825E0564 and 0x825E05E0.
+"0x825E0478" = { name = "sub_825E0478", size = 0x18 }
+"0x825E0490" = { name = "sub_825E0490", size = 0x18 }
+"0x825E04A8" = { name = "sub_825E04A8", size = 0x18 }
+"0x825E04C0" = { name = "sub_825E04C0", size = 0x18 }
+"0x825E04D8" = { name = "sub_825E04D8", size = 0x18 }
+"0x825E04F0" = { name = "sub_825E04F0", size = 0x18 }
+"0x825E0508" = { name = "sub_825E0508", size = 0x18 }
+"0x825E0520" = { name = "sub_825E0520", size = 0x18 }
+"0x825E0538" = { name = "sub_825E0538", size = 0x18 }
+"0x825E0550" = { name = "sub_825E0550", size = 0x18 }
+"0x825E05E0" = { name = "sub_825E05E0", size = 0x18 }

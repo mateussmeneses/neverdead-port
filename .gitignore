@@ -1,0 +1,65 @@
+# Build output and build directories
+/build/
+/out/
+/dist/
+CMakeUserPresets.json
+CMakeFiles/
+CMakeCache.txt
+*.ninja
+*.ninja_deps
+*.ninja_log
+
+# Local game dumps, media and assets (proprietary - users must provide legal copy)
+/game/
+/game-dump/
+/neverdeadxex/
+*.xex
+*.xexp
+*.iso
+*.bin
+*.zar
+*.asrBE
+*.guiBE
+*.amBE
+*.enBE
+*.frBE
+*.geBE
+*.itBE
+*.spBE
+*.xbox360
+*.bik
+
+# Recompiled generated sources
+/generated/
+/src/generated/
+
+# Reference clones (managed independently via references.csv)
+/refs/
+
+# Binary build products
+*.obj
+*.o
+*.lib
+*.a
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.exp
+
+# Logs, memory dumps and GPU captures
+/logs/
+*.log
+*.dmp
+*.wpix
+*.ppm
+*_gpu_events.csv
+*_gpu_screenshot.png
+
+# IDE and cache
+/.vs/
+/.vscode/
+/.idea/
+/.cache/
+__pycache__/
+*.pyc
