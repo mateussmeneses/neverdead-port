@@ -1,0 +1,17 @@
+Metric,Cold Cache,Warm Cache,Delta / Improvement
+Frames Captured,0,0,0
+p50 Frametime (ms),0.00,0.00,0.00 ms
+p95 Frametime (ms),0.00,0.00,0.00 ms
+p99 Frametime (ms),0.00,0.00,0.00 ms
+Max Frametime Spike (ms),0.00,0.00,0.00 ms
+Stutters > 33.3ms,0,0,0
+Stutters > 50ms,0,0,0
+Median FPS,0.0,0.0,0.0 FPS
+1% Low FPS,0.0,0.0,0.0 FPS
+Peak RSS RAM (MB),552.9,561.6,8.7 MB
+Peak Commit RAM (MB),1352.7,1356.4,3.7 MB
+New Shader Cache Files,2,0,-2
+New Shader Cache Size (KB),9.3,0.0,-9.3 KB
+Fatal Crashes,0,0,0
+D3D12 Errors,0,0,0
+Invalid Texture Warnings,0,0,0

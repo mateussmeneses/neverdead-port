@@ -55,6 +55,10 @@ CMakeCache.txt
 *.ppm
 *_gpu_events.csv
 *_gpu_screenshot.png
+*.xpso
+*.xsh
+/shader_cache/
+analysis/**/shader_cache/
 
 # IDE and cache
 /.vs/

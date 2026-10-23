@@ -1,0 +1,57 @@
+name: Build & QA Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-qa:
+    name: Windows x64 Build & QA Gate
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Set up MSVC Dev Environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Verify Clean Workspace (No Proprietary Game Binaries)
+        shell: pwsh
+        run: |
+          Write-Host "Verifying absence of proprietary game assets and retail dumps..."
+          $forbidden = Get-ChildItem -Recurse -Include *.xex, *.iso, *.bin, *.zar, *.asrBE -File -ErrorAction SilentlyContinue
+          if ($forbidden.Count -gt 0) {
+            Write-Error "Proprietary binary files detected in repository: $($forbidden.FullName -join ', ')"
+            exit 1
+          }
+          Write-Host "[OK] Clean repository: zero proprietary assets found."
+
+      - name: Execute QA Smoke Test (Regression & Invariants Check)
+        shell: pwsh
+        run: |
+          Write-Host "Running QA automated regression suite against benchmark baselines..."
+          python analysis/qa_smoke_test.py --verify-recent
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "QA Smoke Test verification failed."
+            exit 1
+          }
+          Write-Host "[OK] QA regression checks passed successfully."

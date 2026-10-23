@@ -1,0 +1,46 @@
+{
+  "scenario": "cold",
+  "duration_sec": 60.064456939697266,
+  "frames_captured": 0,
+  "frametime_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "stutters_gt_33ms": 0,
+    "stutters_gt_50ms": 0,
+    "stutters_gt_100ms": 0
+  },
+  "fps": {
+    "median": 0.0,
+    "min": 0.0,
+    "p1_low": 0.0
+  },
+  "memory_mb": {
+    "peak_rss": 552.9140625,
+    "avg_rss": 522.7494643603679,
+    "peak_commit": 1352.6875
+  },
+  "cpu": {
+    "avg_percent": 134.56510748164658,
+    "peak_percent": 168.2397018701572
+  },
+  "gpu_and_caches": {
+    "total_draw_calls": 0,
+    "total_vertices": 0,
+    "command_buffer_stalls": 0,
+    "texture_cache_hit_rate_pct": 0.0,
+    "pipeline_cache_hit_rate_pct": 0.0,
+    "shader_cache_files_start": 0,
+    "shader_cache_files_end": 2,
+    "shader_cache_files_new": 2,
+    "shader_cache_bytes_new": 9536
+  },
+  "log_health": {
+    "fatal_crashes": 0,
+    "d3d12_errors": 0,
+    "d3d12_warnings": 0,
+    "invalid_texture_warnings": 0
+  }
+}

@@ -20,9 +20,19 @@ A native Windows x64 port of **NeverDead** (Xbox 360, Asura Engine) via static r
 | **N3** | Kernel / XAM HLE & Initial Boot | ✅ Completed | Memory arena, TLS, threads, events, VFS, and file queries operational. |
 | **N4** | Asura Engine Asset & File Layout | ✅ Completed | Big-endian containers and VFS bindings verified against game dump. |
 | **N5** | Xenos → D3D12 Renderer & First Frames | ✅ Completed | D3D12 pipeline active; title screen and in-game presentation verified. |
-| **N6** | Input, Audio & Gameplay In-Flight | 🟡 Advanced | In-game scene reached; DualSense/MNK input functional; audio operational; invalid texture constants resolved. |
-| **N7** | Profiling, Frame Pacing & Optimization | ⏳ Planned | Tracy integration, latency profiling, and micro-stutter reduction. |
-| **N8** | Campaign QA Suite & Release Delivery | ⏳ Planned | Automated milestones tests and smoke tests. |
+| **N6** | Input, Audio & Gameplay Systems | ✅ Completed | In-game scene reached; DualSense/MNK functional; 48 kHz XMA audio; HDR textures resolved. |
+| **N7** | Profiling, Memory & Stutter Mitigation | ✅ Completed | 60s Cold/Warm benchmarks; 550 MB RSS / 1.35 GB Commit; 0 crashes, 100% warm shader cache hit. |
+| **N8** | QA Regression Suite & CI Delivery | ✅ Completed | Automated regression test suite (`qa_smoke_test.py`), GitHub Actions CI, complete documentation. |
+
+---
+
+## Documentation
+
+- [Project Status & Compatibility Matrix](docs/STATUS.md)
+- [Known Issues & Workarounds](docs/KNOWN_ISSUES.md)
+- [Development Roadmap](docs/PORT_ROADMAP.md)
+- [N7 Profiling & Benchmark Report](analysis/N7-status.md)
+- [N8 QA Stability & Regression Report](analysis/N8-qa-report.md)
 
 ---
 
