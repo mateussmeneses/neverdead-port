@@ -1,37 +1,37 @@
 {
   "scenario": "cold",
-  "duration_sec": 60.064456939697266,
-  "frames_captured": 0,
+  "duration_sec": 35.63205289840698,
+  "frames_captured": 1051,
   "frametime_ms": {
-    "mean": 0.0,
-    "p50": 0.0,
-    "p95": 0.0,
-    "p99": 0.0,
-    "max": 0.0,
-    "stutters_gt_33ms": 0,
-    "stutters_gt_50ms": 0,
+    "mean": 33.29511512844909,
+    "p50": 33.345,
+    "p95": 36.1995,
+    "p99": 49.13,
+    "max": 84.595,
+    "stutters_gt_33ms": 533,
+    "stutters_gt_50ms": 6,
     "stutters_gt_100ms": 0
   },
   "fps": {
-    "median": 0.0,
-    "min": 0.0,
-    "p1_low": 0.0
+    "median": 29.0,
+    "min": 11.0,
+    "p1_low": 20.0
   },
   "memory_mb": {
-    "peak_rss": 552.9140625,
-    "avg_rss": 522.7494643603679,
-    "peak_commit": 1352.6875
+    "peak_rss": 552.4453125,
+    "avg_rss": 509.3610594795539,
+    "peak_commit": 1350.30078125
   },
   "cpu": {
-    "avg_percent": 134.56510748164658,
-    "peak_percent": 168.2397018701572
+    "avg_percent": 136.57892386058083,
+    "peak_percent": 354.50078291814947
   },
   "gpu_and_caches": {
-    "total_draw_calls": 0,
-    "total_vertices": 0,
+    "total_draw_calls": 73895,
+    "total_vertices": 445921,
     "command_buffer_stalls": 0,
-    "texture_cache_hit_rate_pct": 0.0,
-    "pipeline_cache_hit_rate_pct": 0.0,
+    "texture_cache_hit_rate_pct": 99.87084275104941,
+    "pipeline_cache_hit_rate_pct": 99.80941624902944,
     "shader_cache_files_start": 0,
     "shader_cache_files_end": 2,
     "shader_cache_files_new": 2,

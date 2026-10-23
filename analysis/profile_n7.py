@@ -75,6 +75,31 @@ def calculate_percentile(sorted_list, p):
     weight = idx - floor_idx
     return sorted_list[floor_idx] * (1.0 - weight) + sorted_list[ceil_idx] * weight
 
+def find_window_for_pid(pid):
+    hwnds = []
+    def enum_cb(hwnd, lparam):
+        wpid = wintypes.DWORD()
+        ctypes.windll.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(wpid))
+        if wpid.value == pid and ctypes.windll.user32.IsWindowVisible(hwnd):
+            hwnds.append(hwnd)
+        return True
+    WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
+    ctypes.windll.user32.EnumWindows(WNDENUMPROC(enum_cb), 0)
+    return hwnds[0] if hwnds else None
+
+def tap_key(hwnd, vk):
+    user32 = ctypes.windll.user32
+    scan = user32.MapVirtualKeyW(vk, 0)
+    extended = 1 if (37 <= vk <= 40) else 0
+    l_down = 1 | (scan << 16) | (extended << 24)
+    l_up = 1 | (scan << 16) | (extended << 24) | (1 << 30) | (1 << 31)
+    if hwnd:
+        user32.PostMessageW(hwnd, 0x0100, vk, l_down)
+    time.sleep(0.08)
+    if hwnd:
+        user32.PostMessageW(hwnd, 0x0101, vk, l_up)
+    time.sleep(0.05)
+
 def run_benchmark(scenario, duration_sec, exe_path, game_data_root, cache_dir, user_dir, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(user_dir, exist_ok=True)
@@ -103,7 +128,8 @@ def run_benchmark(scenario, duration_sec, exe_path, game_data_root, cache_dir, u
         f"--user_data_root={user_dir}",
         f"--cache_root={cache_dir}",
         "--mnk_mode=true",
-        "--gpu_allow_invalid_fetch_constants=true",
+        "--input_background=true",
+        "--gpu_allow_invalid_fetch_constants=false",
         f"--perf_log_csv={perf_csv_path}",
         "--log_level=debug",
         f"--log_file={runtime_log_path}"
@@ -132,10 +158,45 @@ def run_benchmark(scenario, duration_sec, exe_path, game_data_root, cache_dir, u
 
     print(f"[{scenario.upper()}] Sampling metrics for {duration_sec}s (PID: {proc.pid})...")
     
+    hwnd = None
+    win_deadline = time.time() + 15
+    while time.time() < win_deadline and proc.poll() is None:
+        hwnd = find_window_for_pid(proc.pid)
+        if hwnd:
+            break
+        time.sleep(0.2)
+
+    step_stage = 0
     while time.time() < deadline:
         if proc.poll() is not None:
             print(f"[{scenario.upper()}] WARNING: Process exited early with code {proc.returncode}!")
             break
+
+        now = time.time()
+        elapsed_sec = now - start_time
+
+        # Drive transition into 3D gameplay
+        if step_stage == 0 and elapsed_sec >= 16.0:
+            tap_key(hwnd, 0x0D)  # VK_RETURN
+            time.sleep(0.5)
+            tap_key(hwnd, 0x58)  # VK_X
+            step_stage = 1
+        elif step_stage == 1 and elapsed_sec >= 19.5:
+            tap_key(hwnd, 0x26)  # VK_UP
+            time.sleep(0.5)
+            tap_key(hwnd, 0x20)  # VK_SPACE
+            step_stage = 2
+        elif step_stage == 2 and elapsed_sec >= 22.0:
+            tap_key(hwnd, 0x20)  # VK_SPACE
+            step_stage = 3
+        elif step_stage == 3 and elapsed_sec >= 26.0:
+            tap_key(hwnd, 0x0D)  # VK_RETURN (skip cinematic into 3D gameplay)
+            step_stage = 4
+        elif step_stage == 4 and elapsed_sec >= 29.0:
+            # Active gameplay movement
+            tap_key(hwnd, 0x57)  # 'W'
+            time.sleep(0.3)
+            tap_key(hwnd, 0x20)  # Space roll
 
         if h_proc:
             mem = get_process_memory(h_proc)
@@ -147,7 +208,6 @@ def run_benchmark(scenario, duration_sec, exe_path, game_data_root, cache_dir, u
             ut = FILETIME()
             if kernel32.GetProcessTimes(h_proc, ctypes.byref(creation_time), ctypes.byref(exit_time),
                                         ctypes.byref(kt), ctypes.byref(ut)):
-                now = time.time()
                 dt = now - time_prev
                 if dt > 0.5:
                     d_kernel = (filetime_to_int(kt) - filetime_to_int(kernel_time_prev)) / 10000000.0

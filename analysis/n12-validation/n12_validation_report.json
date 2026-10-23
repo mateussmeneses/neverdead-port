@@ -1,0 +1,116 @@
+﻿{
+    "SavePersistence":  {
+                            "FinalHash":  "8056DE75A7AF2232F905562153753001297F404AF0F0681BF3129274F746C9E2",
+                            "FinalSize":  3146752,
+                            "ItemsEnumerated":  0,
+                            "SaveMountCount":  0,
+                            "InitialSize":  3146752,
+                            "InitialHash":  "8056DE75A7AF2232F905562153753001297F404AF0F0681BF3129274F746C9E2",
+                            "DeviceSelectorTriggered":  false
+                        },
+    "Timestamp":  "2026-10-23T13:45:49.6122901-03:00",
+    "RunId":  "20261023-134501",
+    "Captures":  [
+                     {
+                         "SHA256":  "1CE1FD222E308945D3C7F9E5242084525A33A59239272A4C115FC25AA23B553C",
+                         "Description":  "Title screen waiting for Start input",
+                         "Stage":  "01-title-boot",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-01-title-boot-20261023-134519.png",
+                         "FileName":  "n12-01-title-boot-20261023-134519.png",
+                         "Size":  628960
+                     },
+                     {
+                         "SHA256":  "D618901B92E1D178E659511D44DA87BC159A33694B418497B89AD6BEB375E031",
+                         "Description":  "Main Menu after savegame detection",
+                         "Stage":  "02-save-enumerated-menu",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-02-save-enumerated-menu-20261023-134523.png",
+                         "FileName":  "n12-02-save-enumerated-menu-20261023-134523.png",
+                         "Size":  628116
+                     },
+                     {
+                         "SHA256":  "F2D131638C73A946935390DC1CC6B1D0CA36056E167155618B03C3BD670FC9E4",
+                         "Description":  "Menu selection cursor moved",
+                         "Stage":  "03-menu-navigation",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-03-menu-navigation-20261023-134525.png",
+                         "FileName":  "n12-03-menu-navigation-20261023-134525.png",
+                         "Size":  625779
+                     },
+                     {
+                         "SHA256":  "52FC0D507666309617455690F4F6FDD42A07B6375DCBAAF62950938608B53589",
+                         "Description":  "Campaign selection prompt",
+                         "Stage":  "04-campaign-prompt",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-04-campaign-prompt-20261023-134528.png",
+                         "FileName":  "n12-04-campaign-prompt-20261023-134528.png",
+                         "Size":  624640
+                     },
+                     {
+                         "SHA256":  "68663E894075420F3F45ECFDB97CED2A524AAF6D9502EA3DC9FEF80D8A12B73E",
+                         "Description":  "Prologue cutscene with audio sync",
+                         "Stage":  "05-prologue-cinematic",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-05-prologue-cinematic-20261023-134532.png",
+                         "FileName":  "n12-05-prologue-cinematic-20261023-134532.png",
+                         "Size":  620578
+                     },
+                     {
+                         "SHA256":  "52AEBAF3329CFF1D9BE78BABC661DBC70090215A349DBF08534AECB703FC250C",
+                         "Description":  "3D gameplay scene active",
+                         "Stage":  "06-gameplay-active",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-06-gameplay-active-20261023-134536.png",
+                         "FileName":  "n12-06-gameplay-active-20261023-134536.png",
+                         "Size":  616925
+                     },
+                     {
+                         "SHA256":  "1081CDFAA69D4D352C86B85B2BC14BB1F3E5FDC113B523A724072F6CC5E7FC3B",
+                         "Description":  "Bryce moving with character collision",
+                         "Stage":  "07-physics-movement",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-07-physics-movement-20261023-134539.png",
+                         "FileName":  "n12-07-physics-movement-20261023-134539.png",
+                         "Size":  617069
+                     },
+                     {
+                         "SHA256":  "73DB5C4E7FD9F6B6B076529A586F971AC8C3F1ADE6D536EE24B0E619D0AFF810",
+                         "Description":  "Camera perspective rotation",
+                         "Stage":  "08-camera-yaw",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-08-camera-yaw-20261023-134541.png",
+                         "FileName":  "n12-08-camera-yaw-20261023-134541.png",
+                         "Size":  618075
+                     },
+                     {
+                         "SHA256":  "A9A45D217C9EBF888E45859A83B99E8E1809F2BB5BE4E30D821C55CF54E53CE2",
+                         "Description":  "Character roll/jump state",
+                         "Stage":  "09-action-roll",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-09-action-roll-20261023-134542.png",
+                         "FileName":  "n12-09-action-roll-20261023-134542.png",
+                         "Size":  618384
+                     },
+                     {
+                         "SHA256":  "C9543AA674B18D31902A791D93D1585930454879A415313C3BC255354CCD3C53",
+                         "Description":  "In-game pause menu opened",
+                         "Stage":  "10-pause-menu",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-10-pause-menu-20261023-134545.png",
+                         "FileName":  "n12-10-pause-menu-20261023-134545.png",
+                         "Size":  621007
+                     },
+                     {
+                         "SHA256":  "EC7B7111A2A121A191319938009D4905B5771C330900B2B9825CACED104CBF32",
+                         "Description":  "Gameplay resumed after pause",
+                         "Stage":  "11-gameplay-resumed",
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-11-gameplay-resumed-20261023-134547.png",
+                         "FileName":  "n12-11-gameplay-resumed-20261023-134547.png",
+                         "Size":  622772
+                     }
+                 ],
+    "StabilityAudit":  {
+                           "InvalidTextureWarnings":  0,
+                           "D3D12Errors":  0,
+                           "FatalTraps":  0,
+                           "DredFaults":  0
+                       },
+    "AudioAudit":  {
+                       "XmaInitialized":  true,
+                       "BinkSoundThreads":  1,
+                       "BufferUnderruns":  0,
+                       "XmaRegister0601Writes":  0,
+                       "BinkIoThreads":  1
+                   }
+}

@@ -1,15 +1,15 @@
 Metric,Cold Cache,Warm Cache,Delta / Improvement
-Frames Captured,0,0,0
-p50 Frametime (ms),0.00,0.00,0.00 ms
-p95 Frametime (ms),0.00,0.00,0.00 ms
-p99 Frametime (ms),0.00,0.00,0.00 ms
-Max Frametime Spike (ms),0.00,0.00,0.00 ms
-Stutters > 33.3ms,0,0,0
-Stutters > 50ms,0,0,0
-Median FPS,0.0,0.0,0.0 FPS
-1% Low FPS,0.0,0.0,0.0 FPS
-Peak RSS RAM (MB),552.9,561.6,8.7 MB
-Peak Commit RAM (MB),1352.7,1356.4,3.7 MB
+Frames Captured,1051,1052,1
+p50 Frametime (ms),33.34,33.33,-0.02 ms
+p95 Frametime (ms),36.20,35.72,-0.48 ms
+p99 Frametime (ms),49.13,50.01,0.88 ms
+Max Frametime Spike (ms),84.59,68.17,-16.43 ms
+Stutters > 33.3ms,533,525,-8
+Stutters > 50ms,6,11,5
+Median FPS,29.0,30.0,1.0 FPS
+1% Low FPS,20.0,19.5,-0.5 FPS
+Peak RSS RAM (MB),552.4,560.0,7.5 MB
+Peak Commit RAM (MB),1350.3,1355.4,5.1 MB
 New Shader Cache Files,2,0,-2
 New Shader Cache Size (KB),9.3,0.0,-9.3 KB
 Fatal Crashes,0,0,0

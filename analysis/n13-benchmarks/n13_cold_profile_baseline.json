@@ -1,0 +1,53 @@
+{
+  "scenario": "cold",
+  "frames_captured": 1806,
+  "frametime_ms": {
+    "mean": 33.30961184939092,
+    "p50": 33.325,
+    "p95": 35.57675,
+    "p99": 36.63420000000001,
+    "max": 82.131,
+    "stutters_gt_33ms": 900,
+    "stutters_gt_50ms": 4,
+    "stutters_gt_100ms": 0
+  },
+  "fps": {
+    "median": 30.0,
+    "min": 12.0,
+    "p1_low": 27.0
+  },
+  "memory_mb": {
+    "peak_rss": 551.484375,
+    "avg_rss": 493.09747314453125,
+    "peak_commit": 1347.12890625
+  },
+  "cpu": {
+    "avg_percent": 139.90010000872837,
+    "peak_percent": 164.25840722781103
+  },
+  "gpu_and_caches": {
+    "total_draw_calls": 136529,
+    "total_vertices": 865985,
+    "command_buffer_stalls": 0,
+    "texture_cache_hit_rate_pct": 99.93887930846303,
+    "pipeline_cache_hit_rate_pct": 99.90769546340296,
+    "pipeline_creations_logged": 30,
+    "shader_cache_files_start": 0,
+    "shader_cache_files_end": 2,
+    "shader_cache_files_new": 2,
+    "shader_cache_bytes_new": 9536
+  },
+  "ppc_and_system": {
+    "total_functions_dispatched": 19494,
+    "total_interrupt_dispatches": 8198,
+    "max_active_threads": 29,
+    "max_critical_contentions": 0,
+    "total_xma_frames": 0
+  },
+  "log_health": {
+    "fatal_crashes": 0,
+    "d3d12_errors": 0,
+    "d3d12_warnings": 0,
+    "invalid_texture_warnings": 0
+  }
+}

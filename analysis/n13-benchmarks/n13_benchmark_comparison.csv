@@ -1,0 +1,20 @@
+Metric,Cold Cache,Warm Cache,Delta,Unit
+Frames Captured,1808.00,1805.00,-3.00,frames
+Median FPS,29.00,30.00,+1.00,fps
+Min FPS,12.00,15.00,+3.00,fps
+1% Low FPS,27.00,27.00,+0.00,fps
+Mean Frametime,33.31,33.29,-0.01,ms
+P50 Frametime,33.34,33.31,-0.03,ms
+P95 Frametime,35.68,35.55,-0.13,ms
+P99 Frametime,36.88,36.46,-0.42,ms
+Max Frametime,81.76,65.07,-16.69,ms
+Stutters >33ms,908.00,892.00,-16.00,count
+Stutters >50ms,2.00,2.00,+0.00,count
+Stutters >100ms,0.00,0.00,+0.00,count
+Peak RSS,553.42,560.01,+6.59,MB
+Peak Commit,1348.21,1354.60,+6.39,MB
+Avg CPU,143.44,145.40,+1.96,%
+Total Draw Calls,136726.00,136444.00,-282.00,calls
+Command Stalls,0.00,0.00,+0.00,stalls
+Pipeline Cache Hit Rate,99.91,100.00,+0.09,%
+Pipeline Creations,45.00,60.00,+15.00,creations

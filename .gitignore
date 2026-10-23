@@ -28,6 +28,9 @@ CMakeCache.txt
 *.spBE
 *.xbox360
 *.bik
+*.sav
+user_data/
+/user/
 
 # Recompiled generated sources
 /generated/

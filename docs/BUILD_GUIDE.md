@@ -110,12 +110,12 @@ powershell -ExecutionPolicy Bypass -File analysis\Invoke-BuildWithSymlinks.ps1 -
 Create or verify `build/n2-neverdead/neverdead.toml`:
 ```toml
 log_level = "info"
-gpu_allow_invalid_fetch_constants = true
+gpu_allow_invalid_fetch_constants = false
 mnk_mode = true
 ```
 
-> [!IMPORTANT]
-> The setting `gpu_allow_invalid_fetch_constants = true` is mandatory. The Asura Engine binds its primary 1120x640 HDR float scene render targets with descriptor format `0x20` but type `0` (`kInvalidTexture`). This setting instructs Direct3D 12 to bind the HDR surface rather than dropping it.
+> [!NOTE]
+> As of Milestone N11, `gpu_allow_invalid_fetch_constants = true` is no longer required. The ReXGlue Xenos pipeline has been enhanced with `texture_util::IsValidHdrRenderTargetDescriptor`, which specifically identifies and validates the Asura Engine's 1120x640 HDR floating-point render targets (`k_16_16_16_16_FLOAT` and `k_16_16_FLOAT`) without leaving the texture cache vulnerable to arbitrary uninitialized registers.
 
 Launch the port:
 ```powershell

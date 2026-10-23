@@ -1,0 +1,114 @@
+﻿{
+    "TargetedFilterActive":  true,
+    "GpuAllowInvalidFetchConstants":  {
+                                          "IsPresent":  false
+                                      },
+    "Timestamp":  "2026-10-23T12:31:25.4151609-03:00",
+    "RunId":  "20261023-123053",
+    "Captures":  [
+                     {
+                         "Description":  "Pre-title / Press START screen",
+                         "FileName":  "n11-01-title-screen-20261023-123106.png",
+                         "Size":  6099,
+                         "NonBlackRatio":  0,
+                         "Resolution":  "1120x640",
+                         "SHA256":  "AD255F41631035B854E892C51A0202A24D0258A3B6F9E30B641E4427E66E48AA",
+                         "AverageLuminance":  0,
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n11-graphics\\n11-01-title-screen-20261023-123106.png",
+                         "Status":  "MONOCHROME / DARK",
+                         "Stage":  "01-title-screen"
+                     },
+                     {
+                         "Description":  "Main Menu selection",
+                         "FileName":  "n11-02-main-menu-20261023-123109.png",
+                         "Size":  627314,
+                         "NonBlackRatio":  0.5,
+                         "Resolution":  "1120x640",
+                         "SHA256":  "C188D459B8FE32138599295B72BF3AEDEAD88AE544B40F7E6583C1F138ED2316",
+                         "AverageLuminance":  42.53197222222223,
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n11-graphics\\n11-02-main-menu-20261023-123109.png",
+                         "Status":  "VERIFIED (Full 3D HDR Scene)",
+                         "Stage":  "02-main-menu"
+                     },
+                     {
+                         "Description":  "Single Player / New Game prompt",
+                         "FileName":  "n11-03-menu-selection-20261023-123111.png",
+                         "Size":  631022,
+                         "NonBlackRatio":  0.5,
+                         "Resolution":  "1120x640",
+                         "SHA256":  "4B879BB4641415E83D068FB40C83E47E4ABAB9ACF6382E23005C80D1B55CD05D",
+                         "AverageLuminance":  43.096930555555559,
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n11-graphics\\n11-03-menu-selection-20261023-123111.png",
+                         "Status":  "VERIFIED (Full 3D HDR Scene)",
+                         "Stage":  "03-menu-selection"
+                     },
+                     {
+                         "Description":  "Prologue cinematic sequence",
+                         "FileName":  "n11-04-prologue-cutscene-20261023-123115.png",
+                         "Size":  625538,
+                         "NonBlackRatio":  0.52777777777777779,
+                         "Resolution":  "1120x640",
+                         "SHA256":  "1D82E4D6C144CD96B389193C695859E6C6C3B2FCEE844F3FE05281D753A65645",
+                         "AverageLuminance":  43.435333333333347,
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n11-graphics\\n11-04-prologue-cutscene-20261023-123115.png",
+                         "Status":  "VERIFIED (Full 3D HDR Scene)",
+                         "Stage":  "04-prologue-cutscene"
+                     },
+                     {
+                         "Description":  "In-game 3D scene entry",
+                         "FileName":  "n11-05-gameplay-entry-20261023-123120.png",
+                         "Size":  623450,
+                         "NonBlackRatio":  0.52083333333333337,
+                         "Resolution":  "1120x640",
+                         "SHA256":  "D2EFC77475C4A64911179FCE4AEEBECDCDCBB2C97D9B4F6BD4D4C7A8A94D6667",
+                         "AverageLuminance":  43.175069444444453,
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n11-graphics\\n11-05-gameplay-entry-20261023-123120.png",
+                         "Status":  "VERIFIED (Full 3D HDR Scene)",
+                         "Stage":  "05-gameplay-entry"
+                     },
+                     {
+                         "Description":  "Bryce moving forward",
+                         "FileName":  "n11-06-character-movement-20261023-123121.png",
+                         "Size":  622972,
+                         "NonBlackRatio":  0.49305555555555558,
+                         "Resolution":  "1120x640",
+                         "SHA256":  "7F39982D0D92E296C53AB56266D39223CB8E7BF060FE5A174E6B79B2951745A5",
+                         "AverageLuminance":  43.037020833333344,
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n11-graphics\\n11-06-character-movement-20261023-123121.png",
+                         "Status":  "VERIFIED (Full 3D HDR Scene)",
+                         "Stage":  "06-character-movement"
+                     },
+                     {
+                         "Description":  "Camera perspective adjustment",
+                         "FileName":  "n11-07-camera-rotation-20261023-123122.png",
+                         "Size":  621832,
+                         "NonBlackRatio":  0.5,
+                         "Resolution":  "1120x640",
+                         "SHA256":  "6C98C67D5FF8E96ACFE61689366D26F5B286604D44D7BED5601C7F7BACA97B79",
+                         "AverageLuminance":  42.792986111111112,
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n11-graphics\\n11-07-camera-rotation-20261023-123122.png",
+                         "Status":  "VERIFIED (Full 3D HDR Scene)",
+                         "Stage":  "07-camera-rotation"
+                     },
+                     {
+                         "Description":  "Character jump/action state",
+                         "FileName":  "n11-08-action-state-20261023-123123.png",
+                         "Size":  621163,
+                         "NonBlackRatio":  0.50694444444444442,
+                         "Resolution":  "1120x640",
+                         "SHA256":  "8F5CA185508BDD5A14ECF5742B0EDEA480320995D9FB646A9A0E7602F6719C19",
+                         "AverageLuminance":  42.6510138888889,
+                         "Path":  "C:\\projetos\\neverdead\\analysis\\n11-graphics\\n11-08-action-state-20261023-123123.png",
+                         "Status":  "VERIFIED (Full 3D HDR Scene)",
+                         "Stage":  "08-action-state"
+                     }
+                 ],
+    "Mode":  "Direct3D 12 Graphics Correctness (N11)",
+    "ExecutionAudit":  {
+                           "DredErrors":  0,
+                           "D3D12Errors":  0,
+                           "UnregisteredImports":  0,
+                           "FatalTraps":  0,
+                           "InvalidTextureWarnings":  0
+                       }
+}

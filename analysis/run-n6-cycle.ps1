@@ -54,7 +54,7 @@ $arguments = @(
     "--user_data_root=$userDataRoot"
     "--cache_root=$cacheRoot"
     '--mnk_mode=true'
-    '--gpu_allow_invalid_fetch_constants=true'
+    '--gpu_allow_invalid_fetch_constants=false'
     '--log_level=debug'
     "--log_file=$logPath"
 )
