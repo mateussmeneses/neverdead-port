@@ -21,7 +21,8 @@
 | **N5** | Xenos → D3D12 Renderer | **VERIFIED** | Direct3D 12 pipeline active, title frames and HDR scene buffers rendered. |
 | **N6** | Input, Audio & Gameplay | **VERIFIED** | SDL controller/MNK, XMA 48 kHz audio, prologue & menu gameplay reached. |
 | **N7** | Profiling, Memory & Stutter | **VERIFIED** | Cold vs Warm 60s benchmarks; 0 crashes, 0 D3D12 errors, 100% shader hit. |
-| **N8** | QA Stability & CI Suite | **VERIFIED** | Regression harness created; build workflow and release ready. |
+| **N8** | QA Stability & Reports | **VERIFIED** | Regression harness created; bug taxonomy and stability battery documented. |
+| **N9** | Build Reproducibility & QA v2.0 | **VERIFIED** | 4-state QA diagnostic model (PASS/FAIL/SKIP/INCONCLUSIVE), ReXGlue SDK patch unified, build guide. |
 
 ---
 

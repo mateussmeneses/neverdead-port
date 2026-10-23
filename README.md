@@ -23,16 +23,19 @@ A native Windows x64 port of **NeverDead** (Xbox 360, Asura Engine) via static r
 | **N6** | Input, Audio & Gameplay Systems | ✅ Completed | In-game scene reached; DualSense/MNK functional; 48 kHz XMA audio; HDR textures resolved. |
 | **N7** | Profiling, Memory & Stutter Mitigation | ✅ Completed | 60s Cold/Warm benchmarks; 550 MB RSS / 1.35 GB Commit; 0 crashes, 100% warm shader cache hit. |
 | **N8** | QA Regression Suite & CI Delivery | ✅ Completed | Automated regression test suite (`qa_smoke_test.py`), GitHub Actions CI, complete documentation. |
+| **N9** | Build Reproducibility & QA v2.0 | ✅ Completed | 4-state diagnostic QA model (PASS/FAIL/SKIP/INCONCLUSIVE), unified SDK patches, build guide. |
 
 ---
 
 ## Documentation
 
+- [Complete Build & Setup Guide](docs/BUILD_GUIDE.md)
 - [Project Status & Compatibility Matrix](docs/STATUS.md)
 - [Known Issues & Workarounds](docs/KNOWN_ISSUES.md)
 - [Development Roadmap](docs/PORT_ROADMAP.md)
 - [N7 Profiling & Benchmark Report](analysis/N7-status.md)
 - [N8 QA Stability & Regression Report](analysis/N8-qa-report.md)
+- [N9 Build Reproducibility & QA Consolidation](analysis/N9-status.md)
 
 ---
 

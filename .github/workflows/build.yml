@@ -55,3 +55,14 @@ jobs:
             exit 1
           }
           Write-Host "[OK] QA regression checks passed successfully."
+
+      - name: Verify Live Test Runner Guard (Asset-Dependent Gate)
+        shell: pwsh
+        run: |
+          Write-Host "Verifying that live execution mode correctly handles absent assets on CI runner..."
+          python analysis/qa_smoke_test.py --run-live --seconds 2
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Live test runner guard failed."
+            exit 1
+          }
+          Write-Host "[OK] Live test guard correctly identified absence of retail game dump and skipped."

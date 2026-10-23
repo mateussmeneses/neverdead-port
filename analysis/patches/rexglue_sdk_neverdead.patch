@@ -1,0 +1,345 @@
+﻿diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9b3cdf5..cbe5018 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -28,7 +28,7 @@ if(REXGLUE_ENABLE_TRACY)
+     add_compile_definitions($<$<NOT:$<CONFIG:Release>>:REXGLUE_ENABLE_PROFILING>)
+ endif()
+ if(REXGLUE_ENABLE_PERF_COUNTERS)
+-    add_compile_definitions($<$<NOT:$<CONFIG:Release>>:REXGLUE_ENABLE_PERF_COUNTERS>)
++    add_compile_definitions(REXGLUE_ENABLE_PERF_COUNTERS)
+ endif()
+ 
+ # Graphics backend selection
+diff --git a/include/rex/system/info/file.h b/include/rex/system/info/file.h
+index ef0a9ad..6f8f659 100644
+--- a/include/rex/system/info/file.h
++++ b/include/rex/system/info/file.h
+@@ -1,4 +1,8 @@
+ #pragma once
++
++#include <cstdint>
++#include <span>
++
+ /**
+  ******************************************************************************
+  * Xenia : Xbox 360 Emulator Research Project                                 *
+@@ -112,6 +116,11 @@ struct X_FILE_XCTD_COMPRESSION_INFORMATION {
+ };
+ static_assert_size(X_FILE_XCTD_COMPRESSION_INFORMATION, 4);
+ 
++inline bool IsXctdCompressedHeader(std::span<const uint8_t> header) {
++  return header.size() >= 4 && header[0] == 0x0F && header[1] == 0xF5 &&
++         header[2] == 0x12 && header[3] == 0xED;
++}
++
+ // https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_completion_information
+ struct X_FILE_COMPLETION_INFORMATION {
+   be<uint32_t> handle;
+diff --git a/src/core/CMakeLists.txt b/src/core/CMakeLists.txt
+index 1ddafd0..67075da 100644
+--- a/src/core/CMakeLists.txt
++++ b/src/core/CMakeLists.txt
+@@ -132,6 +132,5 @@ endif()
+ 
+ if(REXGLUE_ENABLE_PERF_COUNTERS)
+     target_sources(rexcore PRIVATE perf/counter.cpp)
+-    target_compile_definitions(rexcore PUBLIC
+-        $<$<NOT:$<CONFIG:Release>>:REXGLUE_ENABLE_PERF_COUNTERS>)
++    target_compile_definitions(rexcore PUBLIC REXGLUE_ENABLE_PERF_COUNTERS)
+ endif()
+diff --git a/src/core/perf/counter.cpp b/src/core/perf/counter.cpp
+index 536009e..ae53b05 100644
+--- a/src/core/perf/counter.cpp
++++ b/src/core/perf/counter.cpp
+@@ -154,6 +154,12 @@ void SetCsvLogPath(const std::string& path) {
+ }
+ 
+ void WriteCsvFrame() {
++  if (!g_csv_file) {
++    const auto& path = REXCVAR_GET(perf_log_csv);
++    if (!path.empty()) {
++      SetCsvLogPath(path);
++    }
++  }
+   if (!g_csv_file)
+     return;
+ 
+diff --git a/src/kernel/xam/xam_input.cpp b/src/kernel/xam/xam_input.cpp
+index 80c3634..c704193 100644
+--- a/src/kernel/xam/xam_input.cpp
++++ b/src/kernel/xam/xam_input.cpp
+@@ -112,7 +112,17 @@ u32 XamInputGetState_entry(u32 user_index, u32 flags, ppc_ptr_t<X_INPUT_STATE> i
+   }
+ 
+   auto* is = input_system();
+-  return is->GetState(actual_user_index, input_state);
++  const auto result = is->GetState(actual_user_index, input_state);
++  if (input_state && XSUCCEEDED(result)) {
++    static uint16_t previous_buttons = 0;
++    const auto buttons = static_cast<uint16_t>(input_state->gamepad.buttons);
++    if (buttons != previous_buttons) {
++      REXKRNL_INFO("[DEBUG-N6-CRASH43] XamInputGetState user={} flags=0x{:X} buttons=0x{:04X} result=0x{:08X}",
++                   actual_user_index, flags, buttons, result);
++      previous_buttons = buttons;
++    }
++  }
++  return result;
+ }
+ 
+ // https://msdn.microsoft.com/en-us/library/windows/desktop/microsoft.directx_sdk.reference.xinputsetstate(v=vs.85).aspx
+diff --git a/src/kernel/xboxkrnl/xboxkrnl_io_info.cpp b/src/kernel/xboxkrnl/xboxkrnl_io_info.cpp
+index bd5de65..f0ea1b4 100644
+--- a/src/kernel/xboxkrnl/xboxkrnl_io_info.cpp
++++ b/src/kernel/xboxkrnl/xboxkrnl_io_info.cpp
+@@ -12,6 +12,8 @@
+ // Disable warnings about unused parameters for kernel functions
+ #pragma GCC diagnostic ignored "-Wunused-parameter"
+ 
++#include <array>
++
+ #include <rex/filesystem/device.h>
+ #include <rex/kernel/xboxkrnl/private.h>
+ #include <rex/logging.h>
+@@ -21,6 +23,7 @@
+ #include <rex/system/info/file.h>
+ #include <rex/system/info/volume.h>
+ #include <rex/system/kernel_state.h>
++#include <rex/system/thread_state.h>
+ #include <rex/system/util/string_utils.h>
+ #include <rex/system/xevent.h>
+ #include <rex/system/xfile.h>
+@@ -120,6 +123,16 @@ u32 NtQueryInformationFile_entry(u32 file_handle, ppc_ptr_t<X_IO_STATUS_BLOCK> i
+     return X_STATUS_INVALID_HANDLE;
+   }
+ 
++  auto* thread_state = rex::runtime::ThreadState::Get();
++  auto* ppc_context = thread_state ? thread_state->context() : nullptr;
++  uint32_t guest_pc = ppc_context ? static_cast<uint32_t>(ppc_context->lr) - 4 : 0;
++  uint32_t guest_sp = ppc_context ? ppc_context->r1.u32 : 0;
++  REXKRNL_IMPORT_TRACE(
++      "NtQueryInformationFile",
++      "nid=0x00E8 guest_pc=0x{:08X} guest_sp=0x{:08X} stack=[0x{:08X}] "
++      "handle={:#x} class={} length={} path='{}'",
++      guest_pc, guest_sp, guest_pc, file_handle, info_class, info_length, file->path());
++
+   info_ptr.Zero(info_length);
+ 
+   X_STATUS status = X_STATUS_SUCCESS;
+@@ -149,14 +162,29 @@ u32 NtQueryInformationFile_entry(u32 file_handle, ppc_ptr_t<X_IO_STATUS_BLOCK> i
+       break;
+     }
+     case XFileXctdCompressionInformation: {
+-      REXKRNL_ERROR(
+-          "NtQueryInformationFile(XFileXctdCompressionInformation) "
+-          "unimplemented");
+-      // Files that are XCTD compressed begin with the magic 0x0FF512ED but we
+-      // shouldn't detect this that way. There's probably a flag somewhere
+-      // (attributes?) that defines if it's compressed or not.
+-      status = X_STATUS_INVALID_PARAMETER;
+-      out_length = 0;
++      auto info = info_ptr.as<X_FILE_XCTD_COMPRESSION_INFORMATION*>();
++      uint32_t compressed = 0;
++      if (file->entry()->size() >= sizeof(uint32_t)) {
++        std::array<uint8_t, sizeof(uint32_t)> header{};
++        size_t bytes_read = 0;
++        status = file->file()->ReadSync(header, 0, &bytes_read);
++        if (status == X_STATUS_SUCCESS && bytes_read == header.size()) {
++          compressed = IsXctdCompressedHeader(header) ? 1 : 0;
++        } else if (status == X_STATUS_SUCCESS) {
++          status = X_STATUS_END_OF_FILE;
++        }
++      }
++      if (status == X_STATUS_SUCCESS) {
++        info->unknown = compressed;
++        out_length = sizeof(*info);
++      } else {
++        out_length = 0;
++      }
++      REXKRNL_IMPORT_RESULT(
++          "NtQueryInformationFile",
++          "nid=0x00E8 guest_pc=0x{:08X} path='{}' class={} status={:#x} "
++          "information={} xctd={}",
++          guest_pc, file->path(), info_class, status, out_length, compressed);
+       break;
+     };
+     case XFileNetworkOpenInformation: {
+@@ -197,6 +225,13 @@ u32 NtQueryInformationFile_entry(u32 file_handle, ppc_ptr_t<X_IO_STATUS_BLOCK> i
+     io_status_block_ptr->information = out_length;
+   }
+ 
++  if (info_class != XFileXctdCompressionInformation) {
++    REXKRNL_IMPORT_RESULT(
++        "NtQueryInformationFile",
++        "nid=0x00E8 guest_pc=0x{:08X} path='{}' class={} status={:#x} information={}",
++        guest_pc, file->path(), info_class, status, out_length);
++  }
++
+   return status;
+ }
+ 
+diff --git a/src/system/CMakeLists.txt b/src/system/CMakeLists.txt
+index fc46d86..02fae1a 100644
+--- a/src/system/CMakeLists.txt
++++ b/src/system/CMakeLists.txt
+@@ -101,8 +101,7 @@ if(REXGLUE_ENABLE_TRACY)
+ endif()
+ 
+ if(REXGLUE_ENABLE_PERF_COUNTERS)
+-    target_compile_definitions(rexruntime PUBLIC
+-        $<$<NOT:$<CONFIG:Release>>:REXGLUE_ENABLE_PERF_COUNTERS>)
++    target_compile_definitions(rexruntime PUBLIC REXGLUE_ENABLE_PERF_COUNTERS)
+ endif()
+ 
+ if(WIN32)
+diff --git a/src/system/function_dispatcher.cpp b/src/system/function_dispatcher.cpp
+index bd43109..f8ef9cf 100644
+--- a/src/system/function_dispatcher.cpp
++++ b/src/system/function_dispatcher.cpp
+@@ -35,8 +35,10 @@ FunctionDispatcher* GetBoundFunctionDispatcher() {
+ }  // namespace
+ 
+ static void InvalidFunctionTrap(PPCContext& ctx, uint8_t* /*base*/) {
+-  REX_FATAL("Call to invalid or unregistered function at guest address 0x{:08X}",
+-            ctx.last_indirect_target);
++  REX_FATAL(
++      "Call to invalid or unregistered function at guest address 0x{:08X} "
++      "(LR=0x{:08X}, SP=0x{:08X})",
++      ctx.last_indirect_target, static_cast<uint32_t>(ctx.lr), ctx.r1.u32);
+ }
+ 
+ PPCFunc* ResolveIndirectFunction(uint32_t guest_address) {
+diff --git a/tests/unit/CMakeLists.txt b/tests/unit/CMakeLists.txt
+index 7bd264b..37ef8eb 100644
+--- a/tests/unit/CMakeLists.txt
++++ b/tests/unit/CMakeLists.txt
+@@ -13,6 +13,8 @@ add_executable(unit_tests
+     ppc/import_function_test.cpp
+     ppc/stack_test.cpp
+     system/guest_path_test.cpp
++    system/file_info_test.cpp
++    system/sync_primitives_test.cpp
+     system/achievement_manager_test.cpp
+     system/function_dispatcher_test.cpp
+     input/input_assignment_test.cpp
+@@ -35,6 +37,7 @@ target_include_directories(unit_tests PRIVATE
+ target_link_libraries(unit_tests PRIVATE
+     rexcodegen
+     rexruntime
++    xxHash::xxhash
+     Catch2::Catch2WithMain
+ )
+ 
+diff --git a/tests/unit/codegen/output_stamp_test.cpp b/tests/unit/codegen/output_stamp_test.cpp
+index d97edb5..99a2cfd 100644
+--- a/tests/unit/codegen/output_stamp_test.cpp
++++ b/tests/unit/codegen/output_stamp_test.cpp
+@@ -224,6 +224,6 @@ TEST_CASE("Depfile escapes characters make treats as syntax", "[output_stamp]")
+   std::ifstream in(depfile, std::ios::binary);
+   std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+ 
+-  CHECK(content.find("has\ space.toml") != std::string::npos);
+-  CHECK(content.find("hash\#.toml") != std::string::npos);
++  CHECK(content.find(R"(has\ space.toml)") != std::string::npos);
++  CHECK(content.find(R"(hash\#.toml)") != std::string::npos);
+ }
+diff --git a/tests/unit/system/file_info_test.cpp b/tests/unit/system/file_info_test.cpp
+new file mode 100644
+index 0000000..c423c1f
+--- /dev/null
++++ b/tests/unit/system/file_info_test.cpp
+@@ -0,0 +1,28 @@
++/**
++ * @file        tests/unit/system/file_info_test.cpp
++ * @brief       Unit tests for Xbox 360 file information
++ *
++ * @copyright   Copyright (c) 2026 Tom Clay <tomc@tctechstuff.com>
++ *              All rights reserved.
++ *
++ * @license     BSD 3-Clause License
++ *              See LICENSE file in the project root for full license text.
++ */
++
++#include <array>
++#include <cstdint>
++
++#include <catch2/catch_test_macros.hpp>
++#include <rex/system/info/file.h>
++
++using rex::system::IsXctdCompressedHeader;
++
++TEST_CASE("XCTD header detection uses the big-endian file signature", "[system][file]") {
++  constexpr std::array<uint8_t, 4> signature = {0x0F, 0xF5, 0x12, 0xED};
++  constexpr std::array<uint8_t, 4> plain_file = {0x00, 0x00, 0x00, 0x00};
++  constexpr std::array<uint8_t, 3> short_header = {0x0F, 0xF5, 0x12};
++
++  CHECK(IsXctdCompressedHeader(signature));
++  CHECK_FALSE(IsXctdCompressedHeader(plain_file));
++  CHECK_FALSE(IsXctdCompressedHeader(short_header));
++}
+diff --git a/tests/unit/system/sync_primitives_test.cpp b/tests/unit/system/sync_primitives_test.cpp
+new file mode 100644
+index 0000000..074c13f
+--- /dev/null
++++ b/tests/unit/system/sync_primitives_test.cpp
+@@ -0,0 +1,60 @@
++/**
++ * @file        tests/unit/system/sync_primitives_test.cpp
++ * @brief       Unit tests for guest synchronization primitives
++ *
++ * @copyright   Copyright (c) 2026 Tom Clay <tomc@tctechstuff.com>
++ *              All rights reserved.
++ *
++ * @license     BSD 3-Clause License
++ *              See LICENSE file in the project root for full license text.
++ */
++
++#include <chrono>
++
++#include <catch2/catch_test_macros.hpp>
++#include <rex/thread.h>
++
++using rex::thread::Event;
++using rex::thread::Mutant;
++using rex::thread::Timer;
++using rex::thread::Wait;
++using rex::thread::WaitResult;
++
++TEST_CASE("Manual-reset event stays signaled until reset", "[thread][sync]") {
++  auto event = Event::CreateManualResetEvent(false);
++  REQUIRE(event);
++
++  CHECK(Wait(event.get(), false, std::chrono::milliseconds{0}) == WaitResult::kTimeout);
++  event->Set();
++  CHECK(Wait(event.get(), false, std::chrono::milliseconds{0}) == WaitResult::kSuccess);
++  CHECK(Wait(event.get(), false, std::chrono::milliseconds{0}) == WaitResult::kSuccess);
++  event->Reset();
++  CHECK(Wait(event.get(), false, std::chrono::milliseconds{0}) == WaitResult::kTimeout);
++}
++
++TEST_CASE("Auto-reset event releases only one wait", "[thread][sync]") {
++  auto event = Event::CreateAutoResetEvent(true);
++  REQUIRE(event);
++
++  CHECK(Wait(event.get(), false, std::chrono::milliseconds{0}) == WaitResult::kSuccess);
++  CHECK(Wait(event.get(), false, std::chrono::milliseconds{0}) == WaitResult::kTimeout);
++}
++
++TEST_CASE("Released mutant can be acquired again", "[thread][sync]") {
++  auto mutant = Mutant::Create(false);
++  REQUIRE(mutant);
++
++  CHECK(Wait(mutant.get(), false, std::chrono::milliseconds{0}) == WaitResult::kSuccess);
++  CHECK(mutant->Release());
++  CHECK(Wait(mutant.get(), false, std::chrono::milliseconds{0}) == WaitResult::kSuccess);
++  CHECK(mutant->Release());
++}
++
++TEST_CASE("Synchronization timer signals once after its due time", "[thread][sync]") {
++  auto timer = Timer::CreateSynchronizationTimer();
++  REQUIRE(timer);
++
++  REQUIRE(timer->SetOnceAfter(rex::chrono::hundrednanoseconds{100'000}));
++  CHECK(Wait(timer.get(), false, std::chrono::seconds{1}) == WaitResult::kSuccess);
++  CHECK(Wait(timer.get(), false, std::chrono::milliseconds{0}) == WaitResult::kTimeout);
++}

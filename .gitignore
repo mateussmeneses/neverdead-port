@@ -59,6 +59,8 @@ CMakeCache.txt
 *.xsh
 /shader_cache/
 analysis/**/shader_cache/
+*smoke*
+analysis/**/smoke_*
 
 # IDE and cache
 /.vs/
