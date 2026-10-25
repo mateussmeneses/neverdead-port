@@ -36,6 +36,7 @@ $args = @(
     "--cache_root=$cacheDir",
     "--mnk_mode=true",
     "--gpu_allow_invalid_fetch_constants=false",
+    "--render_target_path_d3d12=rov",
     "--log_level=info",
     "--log_file=$(Join-Path $logDir 'gameplay_session.log')"
 )

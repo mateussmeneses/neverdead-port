@@ -28,6 +28,7 @@ A native Windows x64 port of **NeverDead** (Xbox 360, Asura Engine) via static r
 | **N11** | Xenos/D3D12 Graphics Correctness | ✅ Completed | Targeted Asura HDR descriptor filter; safe default `gpu_allow_invalid_fetch_constants=false`; verified render targets, depth, blending & MSAA; zero D3D12 errors. |
 | **N12** | Gameplay, Physics & Save Persistence | ✅ Completed | STFS/XContent save persistence verified (`ND.sav` 3.14 MB); Havok 3D collision & animations; DualSense & Xbox controllers; focus switching (`--input_background=true`); 0 audio underruns. |
 | **N13** | Real Gameplay Performance & Optimization | ✅ Completed | Automated 3D gameplay benchmark; lock-free flat PPC function table; -22.1% max frametime spike (83.5ms → 65.1ms); -71.4% stutters >50ms (7 → 2); 0.1% min FPS +36.4% (11 → 15 FPS); 24/24 QA pass. |
+| **N14** | Gameplay Lighting & Release Hardening | ✅ Completed | D3D12 ROV path restores the HDR scene; real gameplay, movement and camera captures verified; launchers and validation harnesses default to the safe path. |
 
 ---
 
@@ -44,6 +45,7 @@ A native Windows x64 port of **NeverDead** (Xbox 360, Asura Engine) via static r
 - [N11 Graphics Correctness & D3D12 Report](analysis/N11-status.md)
 - [N12 Gameplay, Physics & Save Persistence Report](analysis/N12-status.md)
 - [N13 Real Gameplay Performance Report](analysis/N13-status.md)
+- [N14 Gameplay Lighting & Release Hardening](analysis/N14-status.md)
 
 ---
 
@@ -54,6 +56,7 @@ A native Windows x64 port of **NeverDead** (Xbox 360, Asura Engine) via static r
 2. **HDR Scene Buffer & Targeted Descriptor Filter**:
    - NeverDead's Asura Engine binds its primary 1120x640 HDR floating-point scene render targets (`k_16_16_16_16_FLOAT`, format 0x20 and `k_16_16_FLOAT`, format 0x1F) with fetch constant type 0 (`kInvalidTexture`).
    - Replaced global invalid descriptor acceptance (`gpu_allow_invalid_fetch_constants = true`) with a targeted filter (`texture_util::IsValidHdrRenderTargetDescriptor`) in `rexgpu-xenos`. This ensures safe execution with `gpu_allow_invalid_fetch_constants = false` while binding valid HDR surfaces and protecting the cache from garbage memory.
+   - Uses the D3D12 ROV render-target path because the faster RTV EDRAM resolve drops NeverDead's HDR scene contribution and leaves only HUD elements visible.
 3. **Audio Subsystem**:
    - SDL audio driver handles host output (48 kHz); XMA decoder handles guest audio packet processing.
 

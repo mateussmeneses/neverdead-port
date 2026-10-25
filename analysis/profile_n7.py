@@ -130,6 +130,7 @@ def run_benchmark(scenario, duration_sec, exe_path, game_data_root, cache_dir, u
         "--mnk_mode=true",
         "--input_background=true",
         "--gpu_allow_invalid_fetch_constants=false",
+        "--render_target_path_d3d12=rov",
         f"--perf_log_csv={perf_csv_path}",
         "--log_level=debug",
         f"--log_file={runtime_log_path}"

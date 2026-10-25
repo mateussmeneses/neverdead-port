@@ -111,11 +111,14 @@ Create or verify `build/n2-neverdead/neverdead.toml`:
 ```toml
 log_level = "info"
 gpu_allow_invalid_fetch_constants = false
+render_target_path_d3d12 = "rov"
 mnk_mode = true
 ```
 
 > [!NOTE]
 > As of Milestone N11, `gpu_allow_invalid_fetch_constants = true` is no longer required. The ReXGlue Xenos pipeline has been enhanced with `texture_util::IsValidHdrRenderTargetDescriptor`, which specifically identifies and validates the Asura Engine's 1120x640 HDR floating-point render targets (`k_16_16_16_16_FLOAT` and `k_16_16_FLOAT`) without leaving the texture cache vulnerable to arbitrary uninitialized registers.
+
+> NeverDead must use the D3D12 ROV render-target path. The faster RTV path loses the HDR scene contribution during EDRAM resolve, leaving gameplay nearly black while HUD elements remain visible.
 
 Launch the port:
 ```powershell

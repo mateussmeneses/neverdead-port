@@ -86,6 +86,9 @@ public static class N10Bridge {
     [DllImport("user32.dll", SetLastError = true)]
     public static extern uint SendInput(uint count, INPUT[] inputs, int size);
 
+    [DllImport("kernel32.dll")]
+    public static extern void Sleep(uint milliseconds);
+
     [StructLayout(LayoutKind.Sequential)]
     public struct RECT {
         public int Left, Top, Right, Bottom;
@@ -146,7 +149,7 @@ public static class N10Bridge {
         inputs[1].data.keyboard.flags = 0x0002; // Key up
 
         if (SendInput(1, new INPUT[] { inputs[0] }, Marshal.SizeOf(typeof(INPUT))) != 1) return false;
-        Thread.Sleep(150);
+        Sleep(150);
         return SendInput(1, new INPUT[] { inputs[1] }, Marshal.SizeOf(typeof(INPUT))) == 1;
     }
 
@@ -161,7 +164,7 @@ public static class N10Bridge {
         inputs[1].data.keyboard.flags = 0x0002;
 
         if (SendInput(1, new INPUT[] { inputs[0] }, Marshal.SizeOf(typeof(INPUT))) != 1) return false;
-        Thread.Sleep(durationMs);
+        Sleep((uint)durationMs);
         return SendInput(1, new INPUT[] { inputs[1] }, Marshal.SizeOf(typeof(INPUT))) == 1;
     }
 }
@@ -181,7 +184,8 @@ $arguments = @(
     "--user_data_root=$userDir",
     "--cache_root=$cacheDir",
     "--mnk_mode=true",
-    "--gpu_allow_invalid_fetch_constants=true",
+    "--gpu_allow_invalid_fetch_constants=false",
+    "--render_target_path_d3d12=rov",
     "--log_level=debug",
     "--log_file=$logPath"
 )

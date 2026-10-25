@@ -6,11 +6,11 @@ This document tracks known issues, their root causes, and verified workarounds f
 
 ## 1. Resolved Issues & Verified Fixes
 
-### 1.1. Black 3D Scene / HDR Render Target Fetch Descriptors (Resolved in N11)
+### 1.1. Black 3D Scene / D3D12 RTV EDRAM Resolve (Resolved)
 - **Issue:** The screen remained mostly black when entering 3D cutscenes and gameplay, despite audio and in-game pause menus being active.
-- **Root Cause:** The Asura Engine configures its primary 1120x640 HDR float scene render target (`k_16_16_16_16_FLOAT`, format `0x20`) using descriptor `(88C04954 1F318060 004FE45F 00A80D11 00000003 00000200)` and secondary HDR buffer (`k_16_16_FLOAT`, format `0x1F`) with fetch type 0 (`kInvalidTexture`). With the default emulator policy, the texture cache refused to bind these descriptors because `SQ_TEX_VALID_TEXTURE` bit was clear.
+- **Root Cause:** The default D3D12 RTV render-target path loses the HDR scene contribution during NeverDead's EDRAM resolve. The final frame retains HUD elements but the 3D scene has near-zero luminance. Enabling invalid fetch constants does not fix the RTV output.
 - **Interim Workaround (N6–N10):** Enabled global `gpu_allow_invalid_fetch_constants = true`. However, this posed cache security risks by also accepting genuine uninitialized garbage descriptors.
-- **Permanent Fix (N11):** Implemented targeted descriptor validation via `texture_util::IsValidHdrRenderTargetDescriptor` in `refs/core/rexglue-sdk/include/rex/graphics/pipeline/texture/util.h` and `cache.cpp`. The texture cache now validates specific Asura HDR floating-point parameters (tiled, formats `0x20` / `0x1F`, base page non-zero, within 8192 dimension bounds) and binds them safely even with `gpu_allow_invalid_fetch_constants = false`, while continuing to reject uninitialized and out-of-bounds registers. Verified by automated Catch2 tests (219/219) and live D3D12 gameplay frame captures.
+- **Permanent Fix:** NeverDead now defaults to `render_target_path_d3d12 = "rov"`, which preserves the HDR EDRAM result. The targeted N11 descriptor validation remains enabled with `gpu_allow_invalid_fetch_constants = false`. Automated gameplay captures increased from average luminance `0.1` on RTV to `83.0` on ROV, with movement and camera stages remaining visible.
 
 ### 1.2. Fatal Guest Trap at `0x825E04F0` (C++ Virtual Dispatch)
 - **Issue:** Early development builds aborted with a fatal guest trap at `0x825E04F0` (`LR=0x826389D8`, `SP=0x7018F790`).

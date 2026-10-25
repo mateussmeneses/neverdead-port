@@ -1,48 +1,48 @@
 {
   "scenario": "cold",
-  "frames_captured": 1808,
+  "frames_captured": 3953,
   "frametime_ms": {
-    "mean": 33.305914269911504,
-    "p50": 33.338,
-    "p95": 35.68055,
-    "p99": 36.8768,
-    "max": 81.759,
-    "stutters_gt_33ms": 908,
-    "stutters_gt_50ms": 2,
-    "stutters_gt_100ms": 0
+    "mean": 33.32201290159372,
+    "p50": 33.305,
+    "p95": 35.2844,
+    "p99": 36.162800000000004,
+    "max": 100.201,
+    "stutters_gt_33ms": 1947,
+    "stutters_gt_50ms": 4,
+    "stutters_gt_100ms": 1
   },
   "fps": {
-    "median": 29.0,
-    "min": 12.0,
+    "median": 30.0,
+    "min": 9.0,
     "p1_low": 27.0
   },
   "memory_mb": {
-    "peak_rss": 553.421875,
-    "avg_rss": 495.00339762369794,
-    "peak_commit": 1348.20703125
+    "peak_rss": 748.0078125,
+    "avg_rss": 475.1137510738832,
+    "peak_commit": 1347.21484375
   },
   "cpu": {
-    "avg_percent": 143.44088898763908,
-    "peak_percent": 155.96209805137354
+    "avg_percent": 140.3251375253315,
+    "peak_percent": 153.84649493752687
   },
   "gpu_and_caches": {
-    "total_draw_calls": 136726,
-    "total_vertices": 866813,
+    "total_draw_calls": 880501,
+    "total_vertices": 1539745170,
     "command_buffer_stalls": 0,
-    "texture_cache_hit_rate_pct": 99.93900180816068,
-    "pipeline_cache_hit_rate_pct": 99.90787183949227,
-    "pipeline_creations_logged": 45,
+    "texture_cache_hit_rate_pct": 99.96629639873161,
+    "pipeline_cache_hit_rate_pct": 99.97533485278966,
+    "pipeline_creations_logged": 124,
     "shader_cache_files_start": 0,
     "shader_cache_files_end": 2,
     "shader_cache_files_new": 2,
-    "shader_cache_bytes_new": 9536
+    "shader_cache_bytes_new": 49604
   },
   "ppc_and_system": {
-    "total_functions_dispatched": 19518,
-    "total_interrupt_dispatches": 8211,
-    "max_active_threads": 29,
+    "total_functions_dispatched": 42982,
+    "total_interrupt_dispatches": 18268,
+    "max_active_threads": 36,
     "max_critical_contentions": 0,
-    "total_xma_frames": 0
+    "total_xma_frames": 109
   },
   "log_health": {
     "fatal_crashes": 0,

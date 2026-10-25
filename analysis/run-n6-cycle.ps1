@@ -55,6 +55,7 @@ $arguments = @(
     "--cache_root=$cacheRoot"
     '--mnk_mode=true'
     '--gpu_allow_invalid_fetch_constants=false'
+    '--render_target_path_d3d12=rov'
     '--log_level=debug'
     "--log_file=$logPath"
 )

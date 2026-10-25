@@ -1,48 +1,48 @@
 {
   "scenario": "warm",
-  "frames_captured": 1805,
+  "frames_captured": 3953,
   "frametime_ms": {
-    "mean": 33.29375567867036,
-    "p50": 33.308,
-    "p95": 35.549,
-    "p99": 36.45648,
-    "max": 65.074,
-    "stutters_gt_33ms": 892,
-    "stutters_gt_50ms": 2,
-    "stutters_gt_100ms": 0
+    "mean": 33.32220996711359,
+    "p50": 33.318,
+    "p95": 35.4298,
+    "p99": 48.51932,
+    "max": 101.676,
+    "stutters_gt_33ms": 1957,
+    "stutters_gt_50ms": 11,
+    "stutters_gt_100ms": 1
   },
   "fps": {
     "median": 30.0,
-    "min": 15.0,
-    "p1_low": 27.0
+    "min": 9.0,
+    "p1_low": 20.0
   },
   "memory_mb": {
-    "peak_rss": 560.0078125,
-    "avg_rss": 505.1412353515625,
-    "peak_commit": 1354.6015625
+    "peak_rss": 762.90625,
+    "avg_rss": 537.2229314325601,
+    "peak_commit": 1363.37890625
   },
   "cpu": {
-    "avg_percent": 145.39661950213227,
-    "peak_percent": 161.28517762075884
+    "avg_percent": 137.53340350641614,
+    "peak_percent": 147.89910572073936
   },
   "gpu_and_caches": {
-    "total_draw_calls": 136444,
-    "total_vertices": 866586,
+    "total_draw_calls": 891388,
+    "total_vertices": 1575382289,
     "command_buffer_stalls": 0,
-    "texture_cache_hit_rate_pct": 99.93884326402237,
-    "pipeline_cache_hit_rate_pct": 99.99657710080439,
-    "pipeline_creations_logged": 60,
+    "texture_cache_hit_rate_pct": 99.96618089349563,
+    "pipeline_cache_hit_rate_pct": 99.99968427466841,
+    "pipeline_creations_logged": 139,
     "shader_cache_files_start": 2,
     "shader_cache_files_end": 2,
     "shader_cache_files_new": 0,
     "shader_cache_bytes_new": 0
   },
   "ppc_and_system": {
-    "total_functions_dispatched": 19475,
-    "total_interrupt_dispatches": 8190,
-    "max_active_threads": 29,
+    "total_functions_dispatched": 42980,
+    "total_interrupt_dispatches": 18267,
+    "max_active_threads": 36,
     "max_critical_contentions": 0,
-    "total_xma_frames": 0
+    "total_xma_frames": 110
   },
   "log_health": {
     "fatal_crashes": 0,

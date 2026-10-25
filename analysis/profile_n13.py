@@ -137,7 +137,8 @@ def hold_key(hwnd, vk, duration_sec):
 
 def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_root, cache_dir, user_dir, output_dir):
     os.makedirs(output_dir, exist_ok=True)
-    os.makedirs(user_dir, exist_ok=True)
+    run_user_dir = os.path.join(user_dir, f"{scenario}-{int(time.time())}")
+    os.makedirs(run_user_dir, exist_ok=True)
 
     if scenario == "cold":
         print(f"[{scenario.upper()}] Resetting shader cache directory: {cache_dir}")
@@ -160,18 +161,24 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     cmd = [
         exe_path,
         f"--game_data_root={game_data_root}",
-        f"--user_data_root={user_dir}",
+        f"--user_data_root={run_user_dir}",
         f"--cache_root={cache_dir}",
         "--mnk_mode=true",
         "--input_background=true",
         "--gpu_allow_invalid_fetch_constants=false",
+        "--render_target_path_d3d12=rov",
         f"--perf_log_csv={perf_csv_path}",
         "--log_level=debug",
         f"--log_file={runtime_log_path}"
     ]
 
+    capture_trigger = Path(exe_path).parent / "capture_trigger.txt"
+    capture_trigger.unlink(missing_ok=True)
+    runtime_env = os.environ.copy()
+    runtime_env["NEVERDEAD_CAPTURE_DIR"] = output_dir
+
     print(f"[{scenario.upper()}] Launching NeverDead runtime...")
-    proc = subprocess.Popen(cmd, cwd=os.path.dirname(exe_path))
+    proc = subprocess.Popen(cmd, cwd=os.path.dirname(exe_path), env=runtime_env)
     h_proc = wintypes.HANDLE(ctypes.windll.kernel32.OpenProcess(0x1000 | 0x0400, False, proc.pid))
 
     rss_samples = []
@@ -201,8 +208,8 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         print(f"[{scenario.upper()}] Window acquired: 0x{hwnd:X}")
         user32.SetForegroundWindow(hwnd)
 
-    print(f"[{scenario.upper()}] Stage 1: Waiting 16s for intro & title screen...")
-    for _ in range(160):
+    print(f"[{scenario.upper()}] Stage 1: Waiting 55s for intro & title screen...")
+    for _ in range(550):
         if proc.poll() is not None:
             break
         if h_proc:
@@ -216,30 +223,36 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         print(f"[{scenario.upper()}] Process terminated prematurely at title boot!")
         return None
 
-    # Step 2: Tap START to load save and enter menu
-    print(f"[{scenario.upper()}] Stage 2: Tapping START (Return / X) to detect save...")
+    # Fresh profile route: title -> gamma -> autosave -> main menu -> difficulty -> prologue.
+    print(f"[{scenario.upper()}] Stage 2: Tapping START (Return / X) to enter setup...")
     tap_key(hwnd, VK_RETURN)
     time.sleep(0.5)
     tap_key(hwnd, VK_X)
     time.sleep(3.0)
 
-    # Step 3: Select Campaign
-    print(f"[{scenario.upper()}] Stage 3: Selecting Campaign (UP + SPACE)...")
-    tap_key(hwnd, VK_UP)
-    time.sleep(0.5)
+    print(f"[{scenario.upper()}] Stage 3: Accepting gamma and autosave notice...")
+    tap_key(hwnd, VK_SPACE)
+    time.sleep(2.0)
     tap_key(hwnd, VK_SPACE)
     time.sleep(2.0)
 
-    # Step 4: Confirm and enter Prologue
-    print(f"[{scenario.upper()}] Stage 4: Confirming Campaign start (SPACE)...")
+    print(f"[{scenario.upper()}] Stage 4: Selecting Single Player and difficulty...")
     tap_key(hwnd, VK_SPACE)
-    time.sleep(4.0)
+    time.sleep(2.0)
+    tap_key(hwnd, VK_SPACE)
+    time.sleep(2.0)
+    tap_key(hwnd, VK_SPACE)
+    time.sleep(6.0)
 
-    # Step 5: Skip Prologue into 3D Gameplay
-    print(f"[{scenario.upper()}] Stage 5: Skipping Prologue cutscene (START) into 3D gameplay...")
-    tap_key(hwnd, VK_RETURN)
-    time.sleep(3.0)
+    print(f"[{scenario.upper()}] Stage 5: Skipping Prologue cutscenes (START)...")
+    for _ in range(5):
+        tap_key(hwnd, VK_RETURN)
+        time.sleep(3.0)
+    tap_key(hwnd, VK_SPACE)  # Resume if the final START paused gameplay.
+    time.sleep(10.0)
 
+    capture_trigger.write_text(f"n13-{scenario}-gameplay", encoding="ascii")
+    time.sleep(2.0)
     print(f"[{scenario.upper()}] Stage 6: >>> 3D GAMEPLAY ACTIVE <<< Sampling {gameplay_duration_sec}s of real gameplay...")
     
     # Active gameplay interaction loop
@@ -473,7 +486,7 @@ def main():
     parser.add_argument("--exe", default=r"C:\projetos\neverdead\build\n2-neverdead\neverdead.exe")
     parser.add_argument("--game-data", default=r"C:\projetos\NeverDeadxex")
     parser.add_argument("--output-dir", default=r"C:\projetos\neverdead\analysis\n13-benchmarks")
-    parser.add_argument("--user-dir", default=r"C:\projetos\neverdead\build\n2-neverdead\n12-save-test\user")
+    parser.add_argument("--user-dir", default=r"C:\projetos\neverdead\analysis\n13-benchmarks\user_data")
     args = parser.parse_args()
 
     cache_dir = os.path.join(args.output_dir, "shader_cache")

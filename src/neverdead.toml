@@ -1,0 +1,4 @@
+log_level = "info"
+gpu_allow_invalid_fetch_constants = false
+render_target_path_d3d12 = "rov"
+mnk_mode = true

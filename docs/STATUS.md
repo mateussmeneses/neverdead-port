@@ -27,6 +27,7 @@
 | **N11**| Xenos/D3D12 Graphics Correctness | **VERIFIED** | Targeted Asura HDR descriptor filter (`k_16_16_16_16_FLOAT`/`k_16_16_FLOAT`); eliminated global invalid constant bypass (`gpu_allow_invalid_fetch_constants=false`); Catch2 unit tests (219/219); 0 D3D12 errors, 0 DRED faults, 0 warnings. |
 | **N12**| Gameplay, Physics & Save Persistence | **VERIFIED** | Full STFS save cycle (`ND.sav` 3.14 MB bit-identical); Havok ragdoll & collision; 6-ch 48 kHz audio; DualSense/Xbox pad; 11 visual stages; 0 traps, 0 D3D12 errors. |
 | **N13**| Real Gameplay Performance | **VERIFIED** | Automated 3D gameplay benchmark; 1,805+ flips; Lock-free flat PPC function table; -22.1% max frametime spike (83.5ms → 65.1ms); -71.4% stutters >50ms (7 → 2); 0.1% min FPS +36.4% (11 → 15 FPS); 24/24 QA pass. |
+| **N14**| Gameplay Lighting & Release Hardening | **VERIFIED** | D3D12 ROV preserves the HDR scene; automated cold boot reaches gameplay and exercises movement/camera; 0 traps, D3D12 errors or DRED faults. |
 
 ---
 
@@ -48,7 +49,7 @@
 ### 2.3. Graphics & Direct3D 12 (Xenos GPU Translation)
 - **Status:** **OPERATIONAL & CORRECT**
 - **API:** Direct3D 12 (Feature Level 11_0+ compatible).
-- **HDR Render Targets:** 1120x640 HDR float scene render targets (`k_16_16_16_16_FLOAT`, format `0x20` and `k_16_16_FLOAT`, format `0x1F`) validated and bound via targeted descriptor filter (`texture_util::IsValidHdrRenderTargetDescriptor`).
+- **HDR Render Targets:** 1120x640 HDR float scene render targets (`k_16_16_16_16_FLOAT`, format `0x20` and `k_16_16_FLOAT`, format `0x1F`) validated and bound via targeted descriptor filter (`texture_util::IsValidHdrRenderTargetDescriptor`). The port defaults to D3D12 ROV because RTV loses the HDR scene during EDRAM resolve on the tested NVIDIA path.
 - **Cache Security:** Safe default `gpu_allow_invalid_fetch_constants = false` enabled. Uninitialized memory or invalid formats are safely rejected to protect the texture cache from corruption.
 - **Shader Caching:** Persistent disk shader cache (`.xsh` / `.xpso`). 100% cache hit rate on warm runs eliminates shader compilation stutter.
 - **Validation:** Zero D3D12 validation layer errors, zero DRED faults, zero texture fetch constant warnings.

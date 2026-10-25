@@ -1,20 +1,20 @@
 Metric,Cold Cache,Warm Cache,Delta,Unit
-Frames Captured,1808.00,1805.00,-3.00,frames
-Median FPS,29.00,30.00,+1.00,fps
-Min FPS,12.00,15.00,+3.00,fps
-1% Low FPS,27.00,27.00,+0.00,fps
-Mean Frametime,33.31,33.29,-0.01,ms
-P50 Frametime,33.34,33.31,-0.03,ms
-P95 Frametime,35.68,35.55,-0.13,ms
-P99 Frametime,36.88,36.46,-0.42,ms
-Max Frametime,81.76,65.07,-16.69,ms
-Stutters >33ms,908.00,892.00,-16.00,count
-Stutters >50ms,2.00,2.00,+0.00,count
-Stutters >100ms,0.00,0.00,+0.00,count
-Peak RSS,553.42,560.01,+6.59,MB
-Peak Commit,1348.21,1354.60,+6.39,MB
-Avg CPU,143.44,145.40,+1.96,%
-Total Draw Calls,136726.00,136444.00,-282.00,calls
+Frames Captured,3953.00,3953.00,+0.00,frames
+Median FPS,30.00,30.00,+0.00,fps
+Min FPS,9.00,9.00,+0.00,fps
+1% Low FPS,27.00,20.00,-7.00,fps
+Mean Frametime,33.32,33.32,+0.00,ms
+P50 Frametime,33.30,33.32,+0.01,ms
+P95 Frametime,35.28,35.43,+0.15,ms
+P99 Frametime,36.16,48.52,+12.36,ms
+Max Frametime,100.20,101.68,+1.48,ms
+Stutters >33ms,1947.00,1957.00,+10.00,count
+Stutters >50ms,4.00,11.00,+7.00,count
+Stutters >100ms,1.00,1.00,+0.00,count
+Peak RSS,748.01,762.91,+14.90,MB
+Peak Commit,1347.21,1363.38,+16.16,MB
+Avg CPU,140.33,137.53,-2.79,%
+Total Draw Calls,880501.00,891388.00,+10887.00,calls
 Command Stalls,0.00,0.00,+0.00,stalls
-Pipeline Cache Hit Rate,99.91,100.00,+0.09,%
-Pipeline Creations,45.00,60.00,+15.00,creations
+Pipeline Cache Hit Rate,99.98,100.00,+0.02,%
+Pipeline Creations,124.00,139.00,+15.00,creations

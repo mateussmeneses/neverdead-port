@@ -9,7 +9,7 @@
 [CmdletBinding()]
 param(
     [string]$GameDataRoot = 'C:\projetos\NeverDeadxex',
-    [int]$WaitTitleSeconds = 16
+    [int]$WaitTitleSeconds = 55
 )
 
 $ErrorActionPreference = 'Stop'
@@ -98,6 +98,9 @@ public static class N12InputBridge {
     [DllImport("user32.dll", SetLastError = true)]
     public static extern uint SendInput(uint count, INPUT[] inputs, int size);
 
+    [DllImport("kernel32.dll")]
+    public static extern void Sleep(uint milliseconds);
+
     [StructLayout(LayoutKind.Sequential)]
     public struct INPUT {
         public uint type;
@@ -136,7 +139,7 @@ public static class N12InputBridge {
             BringWindowToTop(hWnd);
             SetForegroundWindow(hWnd);
         }
-        Thread.Sleep(150);
+        Sleep(150);
         return true;
     }
 
@@ -164,7 +167,7 @@ public static class N12InputBridge {
         inputs[1].data.keyboard.flags = 0x0002 | extFlag;
 
         SendInput(1, new INPUT[] { inputs[0] }, Marshal.SizeOf(typeof(INPUT)));
-        Thread.Sleep(100);
+        Sleep(100);
 
         if (hWnd != IntPtr.Zero) {
             PostMessage(hWnd, 0x0101, (IntPtr)vk, lUp);
@@ -192,7 +195,7 @@ public static class N12InputBridge {
         inputs[0].data.keyboard.flags = extFlag;
 
         SendInput(1, new INPUT[] { inputs[0] }, Marshal.SizeOf(typeof(INPUT)));
-        Thread.Sleep(durationMs);
+        Sleep((uint)durationMs);
 
         if (hWnd != IntPtr.Zero) {
             PostMessage(hWnd, 0x0101, (IntPtr)vk, lUp);
@@ -224,6 +227,7 @@ $arguments = @(
     "--mnk_mode=true",
     "--input_background=true",
     "--gpu_allow_invalid_fetch_constants=false",
+    "--render_target_path_d3d12=rov",
     "--log_level=debug",
     "--log_file=$logPath"
 )
