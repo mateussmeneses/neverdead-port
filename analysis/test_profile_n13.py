@@ -31,6 +31,19 @@ class BmpGateTests(unittest.TestCase):
             self.assertFalse(compare_bmp(reference, dark)['passed'])
 
 
+class StabilityGateTests(unittest.TestCase):
+    def test_accepts_exercised_run_and_rejects_dred_fault(self):
+        results = {
+            'frames_captured': 18000,
+            'stability_actions': {'combat': 1, 'pause_resume': 2, 'focus_cycles': 1},
+            'ppc_and_system': {'total_xma_frames': 1},
+            'log_health': {'fatal_crashes': 0, 'd3d12_errors': 0, 'dred_faults': 0},
+        }
+        self.assertTrue(profile.evaluate_stability_gate(results, 900)['passed'])
+        results['log_health']['dred_faults'] = 1
+        self.assertFalse(profile.evaluate_stability_gate(results, 900)['passed'])
+
+
 class TargetedInputTests(unittest.TestCase):
     def test_save_harness_does_not_use_global_input(self):
         harness = (Path(profile.__file__).parent / 'test_n12_gameplay_save_audio.ps1').read_text()

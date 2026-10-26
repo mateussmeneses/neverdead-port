@@ -89,6 +89,21 @@ def calculate_percentile(sorted_list, p):
     weight = idx - floor_idx
     return sorted_list[floor_idx] * (1.0 - weight) + sorted_list[ceil_idx] * weight
 
+def evaluate_stability_gate(results, requested_seconds):
+    actions = results['stability_actions']
+    health = results['log_health']
+    checks = {
+        'completed_duration': results['frames_captured'] >= requested_seconds * 20,
+        'pause_resume': actions['pause_resume'] >= max(0, (requested_seconds - 1) // 300),
+        'focus_cycles': actions['focus_cycles'] >= max(0, (requested_seconds - 1) // 450),
+        'combat': actions['combat'] > 0,
+        'audio_xma_active': results['ppc_and_system']['total_xma_frames'] > 0,
+        'fatal_crashes': health['fatal_crashes'] == 0,
+        'd3d12_errors': health['d3d12_errors'] == 0,
+        'dred_faults': health['dred_faults'] == 0,
+    }
+    return {'passed': all(checks.values()), 'checks': checks}
+
 def get_csv_size(path):
     return os.path.getsize(path) if os.path.exists(path) else 0
 
@@ -626,12 +641,14 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     d3d12_errors = 0
     d3d12_warnings = 0
     fatal_errors = 0
+    dred_faults = 0
     invalid_tex_warnings = 0
     pipeline_creations = 0
 
     if os.path.exists(runtime_log_path):
         with open(runtime_log_path, 'r', encoding='utf-8', errors='ignore') as f:
             for line in f:
+                line_lower = line.lower()
                 if '[critical]' in line or '[FATAL]' in line:
                     fatal_errors += 1
                 if '[gpu]' in line and '[error]' in line:
@@ -642,6 +659,8 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
                     invalid_tex_warnings += 1
                 if 'Creating graphics pipeline' in line:
                     pipeline_creations += 1
+                if 'dred breadcrumb' in line_lower or 'dred page fault' in line_lower:
+                    dred_faults += 1
 
     results = {
         'scenario': scenario,
@@ -713,6 +732,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             'fatal_crashes': fatal_errors,
             'd3d12_errors': d3d12_errors,
             'd3d12_warnings': d3d12_warnings,
+            'dred_faults': dred_faults,
             'invalid_texture_warnings': invalid_tex_warnings,
         }
     }
@@ -729,8 +749,11 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         'capture': str(capture_path) if capture_path else None,
         'capture_metrics': capture_metrics,
     }
+    results['stability_gate'] = (evaluate_stability_gate(results, gameplay_duration_sec)
+                                 if stability_mode else None)
     results['performance_gate'] = {
         'passed': (results['gameplay_gate']['passed'] and fatal_errors == 0 and
+                   (results['stability_gate']['passed'] if stability_mode else True) and
                    (stability_mode or (p1_low_fps >= 26.0 and stutter_50ms <= 1))),
         'stability_mode': stability_mode,
         'minimum_1_percent_low_fps': 26.0,
@@ -758,6 +781,10 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             f"luminance {capture_metrics.get('average_luminance', 0.0):.1f}, "
             f"non-black {capture_metrics.get('non_black_ratio', 0.0):.1%}"
         )
+    if stability_mode and not results['stability_gate']['passed']:
+        failed_checks = [name for name, passed in results['stability_gate']['checks'].items()
+                         if not passed]
+        raise RuntimeError(f"{artifact_label} stability gate failed: {', '.join(failed_checks)}")
     if not results['performance_gate']['passed']:
         raise RuntimeError(
             f"{artifact_label} performance regression: 1% low {p1_low_fps:.1f} FPS, "
