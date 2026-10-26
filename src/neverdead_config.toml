@@ -1,4 +1,24 @@
 [functions]
+# 30-minute stability run 20261025 reached this virtual target from the
+# dispatcher at LR=0x8223EDB4. It is the 16-byte thunk immediately before the
+# registered 0x82555D28 thunk.
+"0x82555D18" = { name = "sub_82555D18", size = 0x10 }
+
+# Remaining aligned gaps in the same dense 16-byte virtual thunk table. The
+# stability pause reached 0x82555C88 from LR=0x821F072C.
+"0x82555C88" = { name = "sub_82555C88", size = 0x20 }
+"0x82555CA8" = { name = "sub_82555CA8", size = 0x10 }
+"0x82555CF8" = { name = "sub_82555CF8", size = 0x10 }
+"0x82555D08" = { name = "sub_82555D08", size = 0x10 }
+
+# Stability run reached this virtual target from LR=0x821F083C; it occupies the
+# aligned gap immediately before the registered 0x8253A7D0 function.
+"0x8253A7C0" = { name = "sub_8253A7C0", size = 0x10 }
+
+# The second stability pause reached this target from LR=0x821F072C. Its eight
+# instructions end in a tail branch at 0x8253B65C.
+"0x8253B640" = { name = "sub_8253B640", size = 0x20 }
+
 # Tail branches found in the first validation pass:
 # 0x8225C0C8 and 0x825D579C -> 0x8225BCA0 (blr at 0x8225BCB0; next .pdata
 # entry is 0x8225BCB8).
