@@ -1,0 +1,26 @@
+{
+  "source": "shader_cache/shaders/shareable/4B4E081F.rtv.d3d12.xpso",
+  "file_size_bytes": 9804,
+  "header": {
+    "magic": "XEPS",
+    "api": "DXRT",
+    "version": "0x20260226"
+  },
+  "pipeline_count": 136,
+  "bound_render_target_descriptions": 281,
+  "render_target_formats": {
+    "k_8_8_8_8": 42,
+    "k_8_8_8_8_GAMMA": 31,
+    "k_2_10_10_10": 52,
+    "k_16_16_16_16": 100,
+    "k_16_16_FLOAT": 52
+  },
+  "blend_usage": {
+    "color_add": 281,
+    "alpha_add": 281,
+    "color_min_or_max": 0,
+    "alpha_min_or_max": 0,
+    "constant_color_or_alpha_factor": 0
+  },
+  "conclusion": "The cached NeverDead RTV workload cannot exercise the upstream MIN/MAX source-factor or constant-alpha fixes. Fixed16 render targets are the dominant format and remain the relevant isolation target."
+}

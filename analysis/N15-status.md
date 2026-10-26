@@ -59,7 +59,9 @@ The upstream comparison identified Xenia commit
 source factors on host render targets. However, parsing NeverDead's 136 cached
 RTV pipeline descriptions found 281 bound render targets and every color and
 alpha blend operation is ADD. None uses MIN/MAX, so the provisional port was
-removed without spending a build/test cycle on an unreachable path.
+removed without spending a build/test cycle on an unreachable path. The parsed
+counts are recorded in
+[`n15_rtv_pipeline_usage.json`](n13-benchmarks/n15_rtv_pipeline_usage.json).
 
 Commit `2912da02f` repairs cross-format transfer to gamma targets backed by
 `R16G16B16A16_UNORM`; disabling that backing did not fix NeverDead, so it is not
