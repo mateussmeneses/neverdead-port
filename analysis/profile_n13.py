@@ -127,6 +127,7 @@ def evaluate_stability_gate(results, requested_seconds):
         'checkpoint_saves': (actions['checkpoint_saves'] >= 2
                              if requested_seconds >= 1800 else True),
         'audio_xma_active': results['ppc_and_system']['total_xma_frames'] > 0,
+        'audio_underruns': results['audio']['buffer_underruns'] == 0,
         'fatal_crashes': health['fatal_crashes'] == 0,
         'd3d12_errors': health['d3d12_errors'] == 0,
         'dred_faults': health['dred_faults'] == 0,
@@ -688,6 +689,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     dred_faults = 0
     invalid_tex_warnings = 0
     pipeline_creations = 0
+    audio_underruns = 0
 
     if os.path.exists(runtime_log_path):
         with open(runtime_log_path, 'r', encoding='utf-8', errors='ignore') as f:
@@ -705,6 +707,8 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
                     pipeline_creations += 1
                 if 'dred breadcrumb' in line_lower or 'dred page fault' in line_lower:
                     dred_faults += 1
+                if 'underrun' in line_lower or 'drop frame' in line_lower:
+                    audio_underruns += 1
 
     results = {
         'scenario': scenario,
@@ -772,6 +776,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             'latency_us_p95': calculate_percentile(sorted(audio_latencies_us), 95),
             'latency_us_max': max(audio_latencies_us) if audio_latencies_us else 0,
             'queue_depth_max': max(audio_queue_depths) if audio_queue_depths else 0,
+            'buffer_underruns': audio_underruns,
         },
         'stability_actions': stability_actions,
         'log_health': {

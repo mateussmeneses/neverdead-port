@@ -49,12 +49,16 @@ class StabilityGateTests(unittest.TestCase):
                 'checkpoint_saves': 2,
             },
             'ppc_and_system': {'total_xma_frames': 1},
+            'audio': {'buffer_underruns': 0},
             'log_health': {'fatal_crashes': 0, 'd3d12_errors': 0, 'dred_faults': 0},
         }
         self.assertTrue(profile.evaluate_stability_gate(results, 1800)['passed'])
         results['log_health']['dred_faults'] = 1
         self.assertFalse(profile.evaluate_stability_gate(results, 1800)['passed'])
         results['log_health']['dred_faults'] = 0
+        results['audio']['buffer_underruns'] = 1
+        self.assertFalse(profile.evaluate_stability_gate(results, 1800)['passed'])
+        results['audio']['buffer_underruns'] = 0
         results['stability_actions']['checkpoint_saves'] = 1
         self.assertFalse(profile.evaluate_stability_gate(results, 1800)['passed'])
 
