@@ -1,0 +1,28 @@
+{
+  "capture": "n15-rtv-trace-fullrange/n13-warm_rtv-gameplay-20261026-180917.bmp",
+  "log_files": 7,
+  "resolve_count": 92621,
+  "source_to_destination": {
+    "k_8_8_8_8 -> k_8_8_8_8": 23832,
+    "k_16_16_16_16 -> k_16_16_16_16": 18410,
+    "k_16_16_16_16 -> k_16_16_16_16_FLOAT": 16304,
+    "k_32_FLOAT -> k_32_FLOAT": 13150,
+    "kD24S8 -> k_24_8": 9649,
+    "k_16_16_FLOAT -> k_16_16_FLOAT": 5260,
+    "k_2_10_10_10 -> k_2_10_10_10": 5260,
+    "k_16_16_16_16 -> k_8_8_8_8": 756
+  },
+  "fixed16_to_float16_dimensions": {
+    "1120x640": 5784,
+    "1120x320": 5260,
+    "560x320": 2630,
+    "280x160": 2630
+  },
+  "gamma_source_resolves": 0,
+  "capture_metrics": {
+    "average_luminance": 0.4114722222222221,
+    "non_black_ratio": 0.0,
+    "luminance_delta_pct_from_rov": 99.26242412405396,
+    "maximum_average_channel_delta_from_rov": 71.82638888888889
+  }
+}

@@ -36,6 +36,14 @@ targets repeatedly as guest format 5 (`k_16_16_16_16`, fixed16). Disabling gamma
 aliasing did not restore the image. The profiler can now isolate
 `snorm16_render_target_full_range=false` in the next RTV capture.
 
+The full-range trace captured 92,621 resolves. Of those, 16,304 convert fixed16
+`k_16_16_16_16` into `k_16_16_16_16_FLOAT`, including 5,784 resolves of the
+main 1120x640 surface. No resolve has `k_8_8_8_8_GAMMA` as its source. The
+capture is nearly black (average luminance 0.41, 99.26% below ROV), so the
+remaining A/B is now narrowly scoped to the fixed16 32x range remap. Structured
+counts are in
+[`n15_rtv_resolve_trace.json`](n13-benchmarks/n15_rtv_resolve_trace.json).
+
 Comparison against Xenia revisions `95a5c3e` (2026-02-18) and `291f0c9`
 (2026-10-25) found the same integer ownership-transfer formats for FLOAT16
 targets. Xenia's ownership-transfer RT cache originated in `913e1e9`
