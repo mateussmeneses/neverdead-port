@@ -1,0 +1,26 @@
+{
+  "passed": false,
+  "reference": "n13-warm_rov_01-gameplay-20261025-094351.bmp",
+  "candidate": "n13-warm_rtv-gameplay-20261025-030755.bmp",
+  "reference_metrics": {
+    "width": 1120,
+    "height": 640,
+    "non_black_ratio": 0.9444444444444444,
+    "average_luminance": 55.78710416666669,
+    "average_rgb": [72.75, 51.895833333333336, 31.333333333333332]
+  },
+  "candidate_metrics": {
+    "width": 1120,
+    "height": 640,
+    "non_black_ratio": 0.4305555555555556,
+    "average_luminance": 11.413736111111112,
+    "average_rgb": [14.104166666666666, 11.243055555555555, 5.236111111111111]
+  },
+  "luminance_delta_pct": 79.54054744083503,
+  "maximum_average_channel_delta": 58.645833333333336,
+  "limits": {
+    "maximum_luminance_delta_pct": 10.0,
+    "maximum_average_channel_delta": 12.0,
+    "maximum_non_black_ratio_delta": 0.1
+  }
+}
