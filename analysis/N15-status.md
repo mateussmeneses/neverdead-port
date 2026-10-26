@@ -53,6 +53,21 @@ rather than fix it.
 same fallback used when the option is disabled. Testing both values would
 therefore execute the same resolve path.
 
+The upstream comparison did identify one applicable post-baseline correction:
+Xenia commit `067641668f1fba4ef89bf1796a555f74b0cc3469` fixes MIN/MAX blending
+with source factors on host render targets. D3D12 ignores those factors for
+MIN/MAX, while Xenos applies them. The RT0 `SrcAlpha`/`One` case has been ported
+to ReXGlue without changing the ROV shader path; compilation and an RTV visual
+gate are pending the next idle test window.
+
+Two later corrections remain separate follow-up candidates rather than being
+mixed into that isolation run. Commit `2912da02f` repairs cross-format transfer
+to gamma targets backed by `R16G16B16A16_UNORM`; disabling that backing did not
+fix NeverDead, so it is not yet the primary suspect. Commit `4cc584f47` maps
+constant-alpha blending to D3D12 Options13 and provides a legacy fallback. It
+is applicable to the old RTV backend, but should be tested only if the smaller
+MIN/MAX correction fails the image gate so the cause remains attributable.
+
 ## 3. Long-run stability
 
 The first soak exposed missing PPC thunk boundaries during repeated pause/resume
@@ -60,11 +75,15 @@ paths. The evidence-backed functions are now registered in
 `src/neverdead_config.toml`, including the eight-instruction tail thunk at
 `0x8253B640`.
 
-The next 15-minute confirmation run is queued behind a five-minute Windows idle
-gate. Automation sends input only to the game window, runs the game below normal
-priority, prevents concurrent profilers and terminates the game if real user
-input resumes. A successful confirmation will be followed by the full 30-minute
-soak and the save → close → reopen → continue cycle.
+The first laptop-safe attempt reached gameplay and wrote 9,188 frame samples,
+then the user-activity watchdog stopped it before the first five-minute pause;
+the runtime log contains no crash, missing-function or DRED signature. The
+controller now treats this as a recoverable interruption: it terminates the
+game, waits for another five-minute Windows idle period and repeats the same run
+without manual re-arming. Input is sent only to the game window, the game runs
+below normal priority, and a named mutex prevents concurrent profilers. A
+successful 15-minute confirmation will be followed by the full 30-minute soak
+and the save → close → reopen → continue cycle.
 
 ## 4. Remaining acceptance checks
 

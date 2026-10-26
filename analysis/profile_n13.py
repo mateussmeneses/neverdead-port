@@ -168,6 +168,19 @@ def wait_for_idle(required_seconds):
     while get_idle_seconds() < required_seconds:
         time.sleep(5.0)
 
+class UserActivityInterrupted(RuntimeError):
+    pass
+
+def run_after_idle(required_seconds, benchmark):
+    while True:
+        wait_for_idle(required_seconds)
+        try:
+            return benchmark()
+        except UserActivityInterrupted as error:
+            if required_seconds <= 0:
+                raise
+            print(f"{error}; waiting for the next idle window...")
+
 def acquire_profiler_mutex():
     handle = kernel32.CreateMutexW(None, False, "Local\\NeverDeadGameplayProfiler")
     if not handle:
@@ -329,6 +342,9 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         proc.wait(timeout=5)
         if h_proc:
             kernel32.CloseHandle(h_proc)
+        if user_activity_detected.is_set():
+            raise UserActivityInterrupted(
+                f"{artifact_label} stopped because laptop activity resumed")
         raise RuntimeError(f"{artifact_label} game window was not created")
     print(f"[{scenario.upper()}] Window acquired: 0x{hwnd:X}")
 
@@ -346,6 +362,9 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     if proc.poll() is not None:
         if h_proc:
             kernel32.CloseHandle(h_proc)
+        if user_activity_detected.is_set():
+            raise UserActivityInterrupted(
+                f"{artifact_label} stopped because laptop activity resumed")
         raise RuntimeError(
             f"{artifact_label} process terminated at title boot (code {proc.returncode})"
         )
@@ -489,7 +508,8 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         kernel32.CloseHandle(h_proc)
 
     if user_activity_detected.is_set():
-        raise RuntimeError(f"{artifact_label} stopped because laptop activity resumed")
+        raise UserActivityInterrupted(
+            f"{artifact_label} stopped because laptop activity resumed")
 
     final_cache_files, final_cache_bytes = get_dir_size_and_count(cache_dir)
     new_cache_files = final_cache_files - initial_cache_files
@@ -786,15 +806,16 @@ def main():
     for scenario in scenarios:
         scenario_results = []
         for run_index in range(args.runs):
-            wait_for_idle(args.wait_for_idle)
             label_suffix = "_stability" if args.stability else ""
             label = (f"{scenario}_{args.render_path}{label_suffix}" if args.runs == 1 else
                      f"{scenario}_{args.render_path}_{run_index + 1:02}")
-            scenario_results.append(run_gameplay_benchmark(
-                scenario, args.duration, args.exe, args.game_data, cache_dir, args.user_dir,
-                args.output_dir, label, args.render_path, args.reference_capture,
-                not args.disable_gamma_unorm16, args.stability,
-                bool(args.wait_for_idle)))
+            scenario_results.append(run_after_idle(
+                args.wait_for_idle,
+                lambda: run_gameplay_benchmark(
+                    scenario, args.duration, args.exe, args.game_data, cache_dir,
+                    args.user_dir, args.output_dir, label, args.render_path,
+                    args.reference_capture, not args.disable_gamma_unorm16,
+                    args.stability, bool(args.wait_for_idle))))
         results_by_scenario[scenario] = scenario_results
         if args.runs > 1:
             aggregate = {

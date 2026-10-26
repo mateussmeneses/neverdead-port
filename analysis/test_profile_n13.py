@@ -2,7 +2,7 @@ import struct
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import analysis.profile_n13 as profile
 from analysis.profile_n13 import compare_bmp, measure_bmp
@@ -92,6 +92,17 @@ class TargetedInputTests(unittest.TestCase):
             profile.stop_process_when_user_returns(process, detected, 10)
         self.assertTrue(process.terminated)
         self.assertTrue(detected.is_set())
+
+    def test_user_activity_rearms_the_same_run_after_idle(self):
+        benchmark = Mock(side_effect=[
+            profile.UserActivityInterrupted("laptop activity resumed"),
+            "completed",
+        ])
+        with patch.object(profile, 'wait_for_idle') as wait:
+            result = profile.run_after_idle(300, benchmark)
+        self.assertEqual(result, "completed")
+        self.assertEqual(wait.call_count, 2)
+        self.assertEqual(benchmark.call_count, 2)
 
 
 class ProfilerMutexTests(unittest.TestCase):
