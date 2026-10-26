@@ -24,6 +24,14 @@ trap {
     exit 1
 }
 
+$profilerMutexCreated = $false
+$profilerMutex = [Threading.Mutex]::new(
+    $false, 'Local\NeverDeadGameplayProfiler', [ref]$profilerMutexCreated)
+if (-not $profilerMutexCreated) {
+    $profilerMutex.Dispose()
+    throw 'Another NeverDead gameplay profiler is already running.'
+}
+
 $root = Split-Path $PSScriptRoot -Parent
 $buildRoot = Join-Path $root 'build\n2-neverdead'
 $exe = Join-Path $buildRoot 'neverdead.exe'
@@ -429,3 +437,4 @@ $reportPath = Join-Path $captureDir "n12_validation_report.json"
 
 Write-Host "`nSaved N12 Report to: $reportPath"
 Write-Host "================================================================="
+$profilerMutex.Dispose()
