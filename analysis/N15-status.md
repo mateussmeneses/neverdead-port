@@ -48,10 +48,10 @@ ROV therefore remains the default. RTV must not be enabled until the image gate
 passes; a brightness multiplier would hide the EDRAM ownership/resolve defect
 rather than fix it.
 
-The next controlled RTV experiment disables `direct_host_resolve`. This keeps
-host RTV drawing but dumps the affected targets back to the EDRAM buffer before
-the resolve shader, directly testing whether the dark result is in the fast
-host resolve rather than FLOAT16 drawing or tone mapping.
+`direct_host_resolve` is not a useful isolation switch in this ReXGlue revision:
+`TryResolveCopyDirectly` still ends by calling `DumpRenderTargets`, which is the
+same fallback used when the option is disabled. Testing both values would
+therefore execute the same resolve path.
 
 ## 3. Long-run stability
 

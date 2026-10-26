@@ -244,7 +244,7 @@ def hold_key(hwnd, vk, duration_sec):
 def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_root, cache_dir,
                            user_dir, output_dir, artifact_label=None, render_target_path="rov",
                            reference_capture=None, gamma_unorm16=True, stability_mode=False,
-                           stop_on_user_activity=False, direct_host_resolve=True):
+                           stop_on_user_activity=False):
     os.makedirs(output_dir, exist_ok=True)
     artifact_label = artifact_label or f"{scenario}_{render_target_path}"
     run_user_dir = os.path.join(user_dir, f"{artifact_label}-{int(time.time())}")
@@ -279,7 +279,6 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         "--gpu_allow_invalid_fetch_constants=false",
         f"--render_target_path_d3d12={render_target_path}",
         f"--gamma_render_target_as_unorm16={'true' if gamma_unorm16 else 'false'}",
-        f"--direct_host_resolve={'true' if direct_host_resolve else 'false'}",
         f"--perf_log_csv={perf_csv_path}",
         "--log_level=debug",
         f"--log_file={runtime_log_path}"
@@ -763,8 +762,6 @@ def main():
                         help="ROV BMP used to gate RTV visual equivalence")
     parser.add_argument("--disable-gamma-unorm16", action="store_true",
                         help="Test RTV without gamma render targets aliased as UNORM16")
-    parser.add_argument("--disable-direct-host-resolve", action="store_true",
-                        help="Test RTV through an EDRAM dump instead of direct host resolve")
     parser.add_argument("--stability", action="store_true",
                         help="Exercise combat, pause/resume and focus changes during a long soak")
     parser.add_argument("--wait-for-idle", type=int, default=0, metavar="SECONDS",
@@ -797,7 +794,7 @@ def main():
                 scenario, args.duration, args.exe, args.game_data, cache_dir, args.user_dir,
                 args.output_dir, label, args.render_path, args.reference_capture,
                 not args.disable_gamma_unorm16, args.stability,
-                bool(args.wait_for_idle), not args.disable_direct_host_resolve))
+                bool(args.wait_for_idle)))
         results_by_scenario[scenario] = scenario_results
         if args.runs > 1:
             aggregate = {
