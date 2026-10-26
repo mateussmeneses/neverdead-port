@@ -33,6 +33,12 @@ class BmpGateTests(unittest.TestCase):
 
 
 class StabilityGateTests(unittest.TestCase):
+    def test_memory_slope_is_reported_per_minute(self):
+        self.assertAlmostEqual(
+            profile.linear_slope_per_minute([0.0, 30.0, 60.0], [100.0, 110.0, 120.0]),
+            20.0,
+        )
+
     def test_accepts_exercised_run_and_rejects_dred_fault(self):
         results = {
             'frames_captured': 36000,

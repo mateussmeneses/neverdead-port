@@ -102,6 +102,20 @@ def calculate_percentile(sorted_list, p):
     weight = idx - floor_idx
     return sorted_list[floor_idx] * (1.0 - weight) + sorted_list[ceil_idx] * weight
 
+def linear_slope_per_minute(times, values):
+    if len(times) < 2 or len(times) != len(values):
+        return 0.0
+    mean_time = sum(times) / len(times)
+    mean_value = sum(values) / len(values)
+    denominator = sum((sample_time - mean_time) ** 2 for sample_time in times)
+    if denominator == 0.0:
+        return 0.0
+    slope_per_second = sum(
+        (sample_time - mean_time) * (value - mean_value)
+        for sample_time, value in zip(times, values)
+    ) / denominator
+    return slope_per_second * 60.0
+
 def evaluate_stability_gate(results, requested_seconds):
     actions = results['stability_actions']
     health = results['log_health']
@@ -348,6 +362,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
 
     rss_samples = []
     commit_samples = []
+    memory_sample_times = []
     cpu_samples = []
     kernel32 = ctypes.windll.kernel32
     creation_time = FILETIME()
@@ -447,6 +462,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     gameplay_csv_start = get_csv_size(perf_csv_path)
     rss_samples.clear()
     commit_samples.clear()
+    memory_sample_times.clear()
     cpu_samples.clear()
     if h_proc:
         kernel32.GetProcessTimes(h_proc, ctypes.byref(creation_time), ctypes.byref(exit_time),
@@ -478,6 +494,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             if mem:
                 rss_samples.append(mem['rss_mb'])
                 commit_samples.append(mem['commit_mb'])
+                memory_sample_times.append(time.time() - gameplay_start)
 
             kt = FILETIME()
             ut = FILETIME()
@@ -653,6 +670,8 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
                   sample_window) if sample_window else 0.0
     commit_growth = ((sum(commit_samples[-sample_window:]) - sum(commit_samples[:sample_window])) /
                      sample_window) if sample_window else 0.0
+    rss_slope = linear_slope_per_minute(memory_sample_times, rss_samples)
+    commit_slope = linear_slope_per_minute(memory_sample_times, commit_samples)
     avg_cpu = sum(cpu_samples) / len(cpu_samples) if cpu_samples else 0.0
     peak_cpu = max(cpu_samples) if cpu_samples else 0.0
 
@@ -723,6 +742,8 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             'peak_commit': peak_commit,
             'rss_growth': rss_growth,
             'commit_growth': commit_growth,
+            'rss_slope_mb_per_min': rss_slope,
+            'commit_slope_mb_per_min': commit_slope,
         },
         'cpu': {
             'avg_percent': avg_cpu,
