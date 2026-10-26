@@ -291,7 +291,8 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     runtime_env["NEVERDEAD_CAPTURE_DIR"] = output_dir
 
     print(f"[{scenario.upper()}] Launching NeverDead runtime...")
-    creationflags = subprocess.BELOW_NORMAL_PRIORITY_CLASS if stability_mode else 0
+    creationflags = (subprocess.BELOW_NORMAL_PRIORITY_CLASS
+                     if stability_mode or stop_on_user_activity else 0)
     proc = subprocess.Popen(cmd, cwd=os.path.dirname(exe_path), env=runtime_env,
                             creationflags=creationflags)
     user_activity_detected = threading.Event()
