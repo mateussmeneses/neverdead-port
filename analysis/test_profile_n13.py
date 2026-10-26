@@ -69,5 +69,27 @@ class TargetedInputTests(unittest.TestCase):
         sleep.assert_called_once_with(5.0)
 
 
+class ProfilerMutexTests(unittest.TestCase):
+    def test_rejects_a_second_profiler(self):
+        class FakeKernel32:
+            def __init__(self):
+                self.closed = []
+
+            def CreateMutexW(self, *_):
+                return 42
+
+            def GetLastError(self):
+                return profile.ERROR_ALREADY_EXISTS
+
+            def CloseHandle(self, handle):
+                self.closed.append(handle)
+
+        fake = FakeKernel32()
+        with patch.object(profile, 'kernel32', fake), \
+             self.assertRaisesRegex(RuntimeError, "already running"):
+            profile.acquire_profiler_mutex()
+        self.assertEqual(fake.closed, [42])
+
+
 if __name__ == "__main__":
     unittest.main()

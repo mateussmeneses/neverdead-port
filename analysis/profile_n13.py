@@ -15,6 +15,7 @@ Measures real 3D gameplay performance in Direct3D 12:
 """
 
 import argparse
+import atexit
 import csv
 import ctypes
 from ctypes import wintypes
@@ -26,6 +27,10 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
+kernel32 = ctypes.windll.kernel32
+kernel32.CreateMutexW.restype = wintypes.HANDLE
+ERROR_ALREADY_EXISTS = 183
 
 # Win32 Structures
 class PROCESS_MEMORY_COUNTERS_EX(ctypes.Structure):
@@ -158,6 +163,15 @@ def wait_for_idle(required_seconds):
     print(f"Waiting until Windows has been idle for {required_seconds}s...")
     while get_idle_seconds() < required_seconds:
         time.sleep(5.0)
+
+def acquire_profiler_mutex():
+    handle = kernel32.CreateMutexW(None, False, "Local\\NeverDeadGameplayProfiler")
+    if not handle:
+        raise ctypes.WinError()
+    if kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
+        kernel32.CloseHandle(handle)
+        raise RuntimeError("Another NeverDead gameplay profiler is already running")
+    return handle
 
 # Win32 Window & Input Helpers
 user32 = ctypes.windll.user32
@@ -714,6 +728,8 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     return results
 
 def main():
+    mutex = acquire_profiler_mutex()
+    atexit.register(kernel32.CloseHandle, mutex)
     parser = argparse.ArgumentParser(description="NeverDead N13 Real Gameplay Performance Benchmark")
     parser.add_argument("--scenario", choices=["cold", "warm", "both"], default="both")
     parser.add_argument("--duration", type=int, default=30, help="Interactive gameplay sampling duration in seconds")
