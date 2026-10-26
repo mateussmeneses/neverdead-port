@@ -103,9 +103,11 @@ below normal priority, and a named mutex prevents concurrent profilers. A
 successful 15-minute confirmation will be followed by the full 30-minute soak
 and the save → close → reopen → continue cycle. The stability gate now
 requires the requested duration, combat, scheduled pause/resume and focus
-cycles, active XMA decoding, and zero fatal, D3D12 or DRED faults. The 30-minute
-run additionally requires at least two `.sav`/`.header` write events after
-gameplay starts, providing direct evidence of multiple checkpoint saves.
+cycles, active XMA decoding, zero audio underruns, and zero fatal, D3D12 or DRED
+faults. Memory evidence includes peak, start/end growth and linear RSS/commit
+slopes in MB/min. The 30-minute run additionally requires at least two
+`.sav`/`.header` write events after gameplay starts, providing direct evidence
+of multiple checkpoint saves.
 
 ## 4. Remaining acceptance checks
 
