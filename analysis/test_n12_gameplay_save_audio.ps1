@@ -69,81 +69,16 @@ using System.Threading;
 
 public static class N12InputBridge {
     [DllImport("user32.dll")]
-    public static extern bool ShowWindowAsync(IntPtr window, int command);
-
-    [DllImport("user32.dll")]
-    public static extern bool SetForegroundWindow(IntPtr window);
-
-    [DllImport("user32.dll")]
-    public static extern IntPtr GetForegroundWindow();
-
-    [DllImport("user32.dll")]
-    public static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
-
-    [DllImport("kernel32.dll")]
-    public static extern uint GetCurrentThreadId();
-
-    [DllImport("user32.dll")]
-    public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
-
-    [DllImport("user32.dll")]
-    public static extern bool BringWindowToTop(IntPtr hWnd);
-
-    [DllImport("user32.dll")]
     public static extern uint MapVirtualKey(uint uCode, uint uMapType);
 
     [DllImport("user32.dll")]
     public static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern uint SendInput(uint count, INPUT[] inputs, int size);
-
     [DllImport("kernel32.dll")]
     public static extern void Sleep(uint milliseconds);
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct INPUT {
-        public uint type;
-        public MOUSEKEYBDHARDWAREINPUT data;
-    }
-
-    [StructLayout(LayoutKind.Explicit)]
-    public struct MOUSEKEYBDHARDWAREINPUT {
-        [FieldOffset(0)] public KEYBDINPUT keyboard;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct KEYBDINPUT {
-        public ushort virtualKey;
-        public ushort scanCode;
-        public uint flags;
-        public uint time;
-        public IntPtr extraInfo;
-    }
-
-    public static bool RequestForeground(IntPtr hWnd) {
-        ShowWindowAsync(hWnd, 9); // SW_RESTORE
-        uint forePid;
-        uint foreThread = GetWindowThreadProcessId(GetForegroundWindow(), out forePid);
-        uint curThread = GetCurrentThreadId();
-        uint targetPid;
-        uint targetThread = GetWindowThreadProcessId(hWnd, out targetPid);
-        if (foreThread != targetThread) {
-            AttachThreadInput(foreThread, targetThread, true);
-            AttachThreadInput(curThread, targetThread, true);
-            BringWindowToTop(hWnd);
-            SetForegroundWindow(hWnd);
-            AttachThreadInput(foreThread, targetThread, false);
-            AttachThreadInput(curThread, targetThread, false);
-        } else {
-            BringWindowToTop(hWnd);
-            SetForegroundWindow(hWnd);
-        }
-        Sleep(150);
-        return true;
-    }
-
     public static bool TapKey(IntPtr hWnd, ushort vk) {
+        if (hWnd == IntPtr.Zero) throw new ArgumentException("Game window is required");
         uint scan = MapVirtualKey((uint)vk, 0);
         bool extended = (vk >= 37 && vk <= 40);
         uint extFlag = extended ? 1u : 0u;
@@ -151,32 +86,14 @@ public static class N12InputBridge {
         IntPtr lDown = (IntPtr)(1 | (scan << 16) | (extFlag << 24));
         IntPtr lUp = (IntPtr)(1 | (scan << 16) | (extFlag << 24) | (1u << 30) | (1u << 31));
 
-        if (hWnd != IntPtr.Zero) {
-            PostMessage(hWnd, 0x0100, (IntPtr)vk, lDown);
-        }
-
-        INPUT[] inputs = new INPUT[2];
-        inputs[0].type = 1;
-        inputs[0].data.keyboard.virtualKey = vk;
-        inputs[0].data.keyboard.scanCode = (ushort)scan;
-        inputs[0].data.keyboard.flags = extFlag;
-
-        inputs[1].type = 1;
-        inputs[1].data.keyboard.virtualKey = vk;
-        inputs[1].data.keyboard.scanCode = (ushort)scan;
-        inputs[1].data.keyboard.flags = 0x0002 | extFlag;
-
-        SendInput(1, new INPUT[] { inputs[0] }, Marshal.SizeOf(typeof(INPUT)));
+        PostMessage(hWnd, 0x0100, (IntPtr)vk, lDown);
         Sleep(100);
-
-        if (hWnd != IntPtr.Zero) {
-            PostMessage(hWnd, 0x0101, (IntPtr)vk, lUp);
-        }
-        SendInput(1, new INPUT[] { inputs[1] }, Marshal.SizeOf(typeof(INPUT)));
+        PostMessage(hWnd, 0x0101, (IntPtr)vk, lUp);
         return true;
     }
 
     public static bool HoldKey(IntPtr hWnd, ushort vk, int durationMs) {
+        if (hWnd == IntPtr.Zero) throw new ArgumentException("Game window is required");
         uint scan = MapVirtualKey((uint)vk, 0);
         bool extended = (vk >= 37 && vk <= 40);
         uint extFlag = extended ? 1u : 0u;
@@ -184,29 +101,9 @@ public static class N12InputBridge {
         IntPtr lDown = (IntPtr)(1 | (scan << 16) | (extFlag << 24));
         IntPtr lUp = (IntPtr)(1 | (scan << 16) | (extFlag << 24) | (1u << 30) | (1u << 31));
 
-        if (hWnd != IntPtr.Zero) {
-            PostMessage(hWnd, 0x0100, (IntPtr)vk, lDown);
-        }
-
-        INPUT[] inputs = new INPUT[2];
-        inputs[0].type = 1;
-        inputs[0].data.keyboard.virtualKey = vk;
-        inputs[0].data.keyboard.scanCode = (ushort)scan;
-        inputs[0].data.keyboard.flags = extFlag;
-
-        SendInput(1, new INPUT[] { inputs[0] }, Marshal.SizeOf(typeof(INPUT)));
+        PostMessage(hWnd, 0x0100, (IntPtr)vk, lDown);
         Sleep((uint)durationMs);
-
-        if (hWnd != IntPtr.Zero) {
-            PostMessage(hWnd, 0x0101, (IntPtr)vk, lUp);
-        }
-
-        inputs[1].type = 1;
-        inputs[1].data.keyboard.virtualKey = vk;
-        inputs[1].data.keyboard.scanCode = (ushort)scan;
-        inputs[1].data.keyboard.flags = 0x0002 | extFlag;
-
-        SendInput(1, new INPUT[] { inputs[1] }, Marshal.SizeOf(typeof(INPUT)));
+        PostMessage(hWnd, 0x0101, (IntPtr)vk, lUp);
         return true;
     }
 }
@@ -236,6 +133,7 @@ $env:NEVERDEAD_CAPTURE_DIR = $captureDir
 
 Write-Host "Launching NeverDead runtime..."
 $proc = Start-Process -FilePath $exe -ArgumentList $arguments -WorkingDirectory $buildRoot -PassThru
+$proc.PriorityClass = 'BelowNormal'
 
 # Locate main window
 $windowHandle = [IntPtr]::Zero
@@ -251,7 +149,6 @@ while ([DateTime]::UtcNow -lt $deadline -and -not $proc.HasExited) {
 
 if ($windowHandle -ne [IntPtr]::Zero) {
     Write-Host "Window Handle Acquired: $windowHandle (PID: $($proc.Id))"
-    [void][N12InputBridge]::RequestForeground($windowHandle)
 }
 
 $capturedFrames = @()
@@ -308,7 +205,6 @@ function Take-N12Capture {
 
 Write-Host "`nWaiting $WaitTitleSeconds seconds for shader pipelines and title screen..."
 Start-Sleep -Seconds $WaitTitleSeconds
-[void][N12InputBridge]::RequestForeground($windowHandle)
 
 # Stage 1: Title Screen Boot
 Take-N12Capture -StageName "01-title-boot" -Description "Title screen waiting for Start input"

@@ -32,6 +32,11 @@ class BmpGateTests(unittest.TestCase):
 
 
 class TargetedInputTests(unittest.TestCase):
+    def test_save_harness_does_not_use_global_input(self):
+        harness = (Path(profile.__file__).parent / 'test_n12_gameplay_save_audio.ps1').read_text()
+        self.assertNotIn('SetForegroundWindow', harness)
+        self.assertNotIn('SendInput', harness)
+
     def test_input_is_sent_only_to_game_window(self):
         class FakeUser32:
             def __init__(self):
