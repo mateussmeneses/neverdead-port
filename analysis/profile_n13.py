@@ -258,7 +258,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
                            user_dir, output_dir, artifact_label=None, render_target_path="rov",
                            reference_capture=None, gamma_unorm16=True,
                            snorm16_full_range=True, stability_mode=False,
-                           stop_on_user_activity=False):
+                           stop_on_user_activity=False, log_level="debug"):
     os.makedirs(output_dir, exist_ok=True)
     artifact_label = artifact_label or f"{scenario}_{render_target_path}"
     run_user_dir = os.path.join(user_dir, f"{artifact_label}-{int(time.time())}")
@@ -295,7 +295,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         f"--gamma_render_target_as_unorm16={'true' if gamma_unorm16 else 'false'}",
         f"--snorm16_render_target_full_range={'true' if snorm16_full_range else 'false'}",
         f"--perf_log_csv={perf_csv_path}",
-        "--log_level=debug",
+        f"--log_level={log_level}",
         f"--log_file={runtime_log_path}"
     ]
 
@@ -790,6 +790,8 @@ def main():
                         help="Exercise combat, pause/resume and focus changes during a long soak")
     parser.add_argument("--wait-for-idle", type=int, default=0, metavar="SECONDS",
                         help="Wait for this much Windows input idle time before each run")
+    parser.add_argument("--log-level", choices=["debug", "trace"], default="debug",
+                        help="Runtime log verbosity; trace includes per-resolve formats")
     parser.add_argument("--exe", default=r"C:\projetos\neverdead\build\n2-neverdead\neverdead.exe")
     parser.add_argument("--game-data", default=r"C:\projetos\NeverDeadxex")
     parser.add_argument("--output-dir", default=r"C:\projetos\neverdead\analysis\n13-benchmarks")
@@ -820,7 +822,7 @@ def main():
                     args.user_dir, args.output_dir, label, args.render_path,
                     args.reference_capture, not args.disable_gamma_unorm16,
                     not args.disable_snorm16_full_range, args.stability,
-                    bool(args.wait_for_idle))))
+                    bool(args.wait_for_idle), args.log_level)))
         results_by_scenario[scenario] = scenario_results
         if args.runs > 1:
             aggregate = {

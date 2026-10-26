@@ -54,28 +54,28 @@ rather than fix it.
 same fallback used when the option is disabled. Testing both values would
 therefore execute the same resolve path.
 
-The upstream comparison did identify one applicable post-baseline correction:
-Xenia commit `067641668f1fba4ef89bf1796a555f74b0cc3469` fixes MIN/MAX blending
-with source factors on host render targets. D3D12 ignores those factors for
-MIN/MAX, while Xenos applies them. The RT0 `SrcAlpha`/`One` case has been ported
-to ReXGlue without changing the ROV shader path; compilation and an RTV visual
-gate are pending the next idle test window.
+The upstream comparison identified Xenia commit
+`067641668f1fba4ef89bf1796a555f74b0cc3469`, which fixes MIN/MAX blending with
+source factors on host render targets. However, parsing NeverDead's 136 cached
+RTV pipeline descriptions found 281 bound render targets and every color and
+alpha blend operation is ADD. None uses MIN/MAX, so the provisional port was
+removed without spending a build/test cycle on an unreachable path.
 
-Two later corrections remain separate follow-up candidates rather than being
-mixed into that isolation run. Commit `2912da02f` repairs cross-format transfer
-to gamma targets backed by `R16G16B16A16_UNORM`; disabling that backing did not
-fix NeverDead, so it is not yet the primary suspect. Commit `4cc584f47` maps
-constant-alpha blending to D3D12 Options13 and provides a legacy fallback. It
-is applicable to the old RTV backend, but should be tested only if the smaller
-MIN/MAX correction fails the image gate so the cause remains attributable.
+Commit `2912da02f` repairs cross-format transfer to gamma targets backed by
+`R16G16B16A16_UNORM`; disabling that backing did not fix NeverDead, so it is not
+the primary suspect. Commit `4cc584f47` maps constant-alpha blending to D3D12
+Options13 and provides a legacy fallback, but the same cache inspection found
+no constant blend-factor use, so it is also outside the failing workload.
 
-Fixed16 is tested separately before either larger port. Xenia commit
-`42c2b880e` replaces the old `32/32767` approximation with the hardware's ten
-fractional bits (`1/1024`) in command constants, packing and unpacking. ReXGlue
-still has the old scale in all three locations, so this is applicable and a
-stronger NeverDead candidate than the gamma-only change. It will be ported only
-after the existing full-range toggle establishes whether fixed16 changes the
-dark gameplay result.
+Fixed16 is tested separately. Xenia commit `42c2b880e` replaces the old
+`32/32767` approximation with the hardware's ten fractional bits (`1/1024`) in
+command constants, packing and unpacking. ReXGlue still has the old scale, but
+the numerical difference is only about 0.003%, far too small to explain the
+79.54% luminance loss. More importantly, the ReXGlue resolve shader disassembly
+already packs fixed16 resolve destinations as UNORM with a 65535 multiplier,
+so it does not contain the roughly 64x crushing bug corrected by `16d2cc05c`.
+The full-range toggle remains useful only to isolate which ownership-transfer
+branch is faulty; neither upstream change should be ported speculatively.
 
 ## 3. Long-run stability
 
