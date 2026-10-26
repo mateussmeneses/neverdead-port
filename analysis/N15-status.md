@@ -69,6 +69,13 @@ the primary suspect. Commit `4cc584f47` maps constant-alpha blending to D3D12
 Options13 and provides a legacy fallback, but the same cache inspection found
 no constant blend-factor use, so it is also outside the failing workload.
 
+Canary commit `534aeb6` (2026-10-23) quantizes PWL gamma after MSAA averaging.
+NeverDead does create format 1 (`k_8_8_8_8_GAMMA`) pipelines, so the change is
+relevant to general gamma fidelity. It is not a candidate for the path-specific
+darkness, however: RTV dumps its host targets to the EDRAM buffer and then uses
+the same resolve shader as ROV. A shared post-dump quantization change cannot
+explain why the ROV reference is lit while the RTV capture is dark.
+
 Fixed16 is tested separately. Xenia commit `42c2b880e` replaces the old
 `32/32767` approximation with the hardware's ten fractional bits (`1/1024`) in
 command constants, packing and unpacking. ReXGlue still has the old scale, but
