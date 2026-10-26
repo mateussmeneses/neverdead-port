@@ -1,3 +1,4 @@
+import os
 import struct
 import tempfile
 import unittest
@@ -34,14 +35,37 @@ class BmpGateTests(unittest.TestCase):
 class StabilityGateTests(unittest.TestCase):
     def test_accepts_exercised_run_and_rejects_dred_fault(self):
         results = {
-            'frames_captured': 18000,
-            'stability_actions': {'combat': 1, 'pause_resume': 2, 'focus_cycles': 1},
+            'frames_captured': 36000,
+            'stability_actions': {
+                'combat': 1,
+                'pause_resume': 5,
+                'focus_cycles': 3,
+                'checkpoint_saves': 2,
+            },
             'ppc_and_system': {'total_xma_frames': 1},
             'log_health': {'fatal_crashes': 0, 'd3d12_errors': 0, 'dred_faults': 0},
         }
-        self.assertTrue(profile.evaluate_stability_gate(results, 900)['passed'])
+        self.assertTrue(profile.evaluate_stability_gate(results, 1800)['passed'])
         results['log_health']['dred_faults'] = 1
-        self.assertFalse(profile.evaluate_stability_gate(results, 900)['passed'])
+        self.assertFalse(profile.evaluate_stability_gate(results, 1800)['passed'])
+        results['log_health']['dred_faults'] = 0
+        results['stability_actions']['checkpoint_saves'] = 1
+        self.assertFalse(profile.evaluate_stability_gate(results, 1800)['passed'])
+
+    def test_observes_save_file_writes_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            save = root / 'ND.sav'
+            ignored = root / 'cache.bin'
+            save.write_bytes(b'one')
+            ignored.write_bytes(b'one')
+            before = profile.snapshot_save_writes(root)
+            save.write_bytes(b'two')
+            os.utime(save, ns=(before['ND.sav'] + 1_000_000_000,) * 2)
+            ignored.write_bytes(b'two')
+            after = profile.snapshot_save_writes(root)
+        self.assertNotEqual(before, after)
+        self.assertEqual(list(after), ['ND.sav'])
 
 
 class TargetedInputTests(unittest.TestCase):

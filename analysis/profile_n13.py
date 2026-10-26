@@ -80,6 +80,19 @@ def get_dir_size_and_count(path):
             count += 1
     return count, total_bytes
 
+def snapshot_save_writes(path):
+    snapshot = {}
+    for root, _, files in os.walk(path):
+        for name in files:
+            if not name.lower().endswith(('.sav', '.header')):
+                continue
+            file_path = os.path.join(root, name)
+            try:
+                snapshot[os.path.relpath(file_path, path)] = os.stat(file_path).st_mtime_ns
+            except FileNotFoundError:
+                pass
+    return snapshot
+
 def calculate_percentile(sorted_list, p):
     if not sorted_list:
         return 0.0
@@ -97,6 +110,8 @@ def evaluate_stability_gate(results, requested_seconds):
         'pause_resume': actions['pause_resume'] >= max(0, (requested_seconds - 1) // 300),
         'focus_cycles': actions['focus_cycles'] >= max(0, (requested_seconds - 1) // 450),
         'combat': actions['combat'] > 0,
+        'checkpoint_saves': (actions['checkpoint_saves'] >= 2
+                             if requested_seconds >= 1800 else True),
         'audio_xma_active': results['ppc_and_system']['total_xma_frames'] > 0,
         'fatal_crashes': health['fatal_crashes'] == 0,
         'd3d12_errors': health['d3d12_errors'] == 0,
@@ -442,7 +457,13 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     gameplay_start = time.time()
     gameplay_end = gameplay_start + gameplay_duration_sec
     cycle_counter = 0
-    stability_actions = {'combat': 0, 'pause_resume': 0, 'focus_cycles': 0}
+    stability_actions = {
+        'combat': 0,
+        'pause_resume': 0,
+        'focus_cycles': 0,
+        'checkpoint_saves': 0,
+    }
+    save_write_snapshot = snapshot_save_writes(run_user_dir)
     next_pause = gameplay_start + 300.0
     next_focus = gameplay_start + 450.0
 
@@ -508,6 +529,10 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             stability_actions['combat'] += 1
 
         cycle_counter += 1
+        current_save_writes = snapshot_save_writes(run_user_dir)
+        if current_save_writes != save_write_snapshot:
+            stability_actions['checkpoint_saves'] += 1
+            save_write_snapshot = current_save_writes
         time.sleep(0.1)
 
     gameplay_csv_end = get_csv_size(perf_csv_path)
