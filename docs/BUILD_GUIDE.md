@@ -38,15 +38,17 @@ git -C refs\core\rexglue-sdk checkout c94f5ebdcb3c9d1a460ca48e04f9758448f8d518
 
 ## 3. Applying the Required ReXGlue SDK Patches
 
-*NeverDead* requires 4 targeted compatibility extensions in ReXGlue to operate stably:
+*NeverDead* requires targeted compatibility and validation extensions in ReXGlue:
 1. **`XFileXctdCompressionInformation` Support**: Queries file compression headers (`0x0FF512ED`) during VFS initialization.
 2. **Crash & Indirect Branch Diagnostics**: Emits guest `LR` and `SP` upon encountering invalid function traps.
-3. **Lazy CSV Performance Counter Initialization**: Prevents null pointer crashes when profiling frames via `--perf_log_csv`.
-4. **Performance Counter Compilation**: Enables `REXGLUE_ENABLE_PERF_COUNTERS` unconditionally across build configurations.
+3. **Gameplay Performance Telemetry**: Safely initializes CSV counters and separates CPU, GPU, swap and presentation timing.
+4. **Background Input & Capture Hooks**: Enables window-targeted automated gameplay without taking keyboard focus.
+5. **HDR Descriptor Validation**: Accepts the Asura Engine float render-target descriptors without enabling the unsafe global fallback.
+6. **Regression Tests**: Covers file information, synchronization, output stamps and HDR texture descriptors.
 
 Apply the unified patch file located at [`analysis/patches/rexglue_sdk_neverdead.patch`](../analysis/patches/rexglue_sdk_neverdead.patch):
 ```powershell
-git -C refs\core\rexglue-sdk apply ..\..\analysis\patches\rexglue_sdk_neverdead.patch
+git -C refs\core\rexglue-sdk apply ..\..\..\analysis\patches\rexglue_sdk_neverdead.patch
 ```
 
 ---
