@@ -21,6 +21,7 @@ from ctypes import wintypes
 import json
 import os
 import shutil
+import struct
 import subprocess
 import sys
 import time
@@ -82,6 +83,82 @@ def calculate_percentile(sorted_list, p):
     weight = idx - floor_idx
     return sorted_list[floor_idx] * (1.0 - weight) + sorted_list[ceil_idx] * weight
 
+def get_csv_size(path):
+    return os.path.getsize(path) if os.path.exists(path) else 0
+
+def measure_bmp(path):
+    data = Path(path).read_bytes()
+    if data[:2] != b'BM' or len(data) < 54:
+        raise ValueError(f"Unsupported BMP: {path}")
+    pixel_offset = struct.unpack_from('<I', data, 10)[0]
+    width, height = struct.unpack_from('<ii', data, 18)
+    bits_per_pixel = struct.unpack_from('<H', data, 28)[0]
+    compression = struct.unpack_from('<I', data, 30)[0]
+    if width <= 0 or height == 0 or bits_per_pixel not in (24, 32) or compression != 0:
+        raise ValueError(f"Unsupported BMP layout: {path}")
+    row_stride = ((width * bits_per_pixel + 31) // 32) * 4
+    bytes_per_pixel = bits_per_pixel // 8
+    height_abs = abs(height)
+    luminance_sum = 0.0
+    channel_sums = [0, 0, 0]
+    non_black = 0
+    sampled = 0
+    for gx in range(10, 90, 7):
+        for gy in range(10, 90, 7):
+            x = width * gx // 100
+            y = height_abs * gy // 100
+            row = height_abs - 1 - y if height > 0 else y
+            offset = pixel_offset + row * row_stride + x * bytes_per_pixel
+            blue, green, red = data[offset:offset + 3]
+            channel_sums[0] += red
+            channel_sums[1] += green
+            channel_sums[2] += blue
+            luminance_sum += 0.299 * red + 0.587 * green + 0.114 * blue
+            non_black += red > 15 or green > 15 or blue > 15
+            sampled += 1
+    return {
+        'width': width,
+        'height': height_abs,
+        'non_black_ratio': non_black / sampled,
+        'average_luminance': luminance_sum / sampled,
+        'average_rgb': [value / sampled for value in channel_sums],
+    }
+
+def compare_bmp(reference_path, candidate_path):
+    reference = measure_bmp(reference_path)
+    candidate = measure_bmp(candidate_path)
+    luminance_delta_pct = abs(candidate['average_luminance'] - reference['average_luminance']) / max(
+        reference['average_luminance'], 1.0) * 100.0
+    channel_delta = max(abs(a - b) for a, b in zip(
+        reference['average_rgb'], candidate['average_rgb']))
+    passed = (reference['width'] == candidate['width'] and
+              reference['height'] == candidate['height'] and
+              luminance_delta_pct <= 10.0 and channel_delta <= 12.0 and
+              abs(candidate['non_black_ratio'] - reference['non_black_ratio']) <= 0.1)
+    return {
+        'passed': passed,
+        'reference': str(reference_path),
+        'candidate': str(candidate_path),
+        'luminance_delta_pct': luminance_delta_pct,
+        'maximum_average_channel_delta': channel_delta,
+    }
+
+def get_idle_seconds():
+    class LASTINPUTINFO(ctypes.Structure):
+        _fields_ = [('cbSize', wintypes.UINT), ('dwTime', wintypes.DWORD)]
+
+    info = LASTINPUTINFO(ctypes.sizeof(LASTINPUTINFO), 0)
+    if not user32.GetLastInputInfo(ctypes.byref(info)):
+        raise ctypes.WinError()
+    return ((ctypes.windll.kernel32.GetTickCount() - info.dwTime) & 0xFFFFFFFF) / 1000.0
+
+def wait_for_idle(required_seconds):
+    if required_seconds <= 0:
+        return
+    print(f"Waiting until Windows has been idle for {required_seconds}s...")
+    while get_idle_seconds() < required_seconds:
+        time.sleep(5.0)
+
 # Win32 Window & Input Helpers
 user32 = ctypes.windll.user32
 WM_KEYDOWN = 0x0100
@@ -96,7 +173,10 @@ VK_W = 0x57
 VK_A = 0x41
 VK_S = 0x53
 VK_D = 0x44
+VK_E = 0x45
+VK_Q = 0x51
 VK_X = 0x58
+VK_ESCAPE = 0x1B
 
 def find_window_for_pid(pid):
     hwnds = []
@@ -112,32 +192,35 @@ def find_window_for_pid(pid):
     return hwnds[0] if hwnds else None
 
 def tap_key(hwnd, vk):
+    if not hwnd:
+        raise RuntimeError("Cannot send targeted input without a game window")
     scan = user32.MapVirtualKeyW(vk, 0)
     extended = 1 if (37 <= vk <= 40) else 0
     l_down = 1 | (scan << 16) | (extended << 24)
     l_up = 1 | (scan << 16) | (extended << 24) | (1 << 30) | (1 << 31)
-    if hwnd:
-        user32.PostMessageW(hwnd, WM_KEYDOWN, vk, l_down)
+    user32.PostMessageW(hwnd, WM_KEYDOWN, vk, l_down)
     time.sleep(0.08)
-    if hwnd:
-        user32.PostMessageW(hwnd, WM_KEYUP, vk, l_up)
+    user32.PostMessageW(hwnd, WM_KEYUP, vk, l_up)
     time.sleep(0.05)
 
 def hold_key(hwnd, vk, duration_sec):
+    if not hwnd:
+        raise RuntimeError("Cannot send targeted input without a game window")
     scan = user32.MapVirtualKeyW(vk, 0)
     extended = 1 if (37 <= vk <= 40) else 0
     l_down = 1 | (scan << 16) | (extended << 24)
     l_up = 1 | (scan << 16) | (extended << 24) | (1 << 30) | (1 << 31)
-    if hwnd:
-        user32.PostMessageW(hwnd, WM_KEYDOWN, vk, l_down)
+    user32.PostMessageW(hwnd, WM_KEYDOWN, vk, l_down)
     time.sleep(duration_sec)
-    if hwnd:
-        user32.PostMessageW(hwnd, WM_KEYUP, vk, l_up)
+    user32.PostMessageW(hwnd, WM_KEYUP, vk, l_up)
     time.sleep(0.05)
 
-def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_root, cache_dir, user_dir, output_dir):
+def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_root, cache_dir,
+                           user_dir, output_dir, artifact_label=None, render_target_path="rov",
+                           reference_capture=None, gamma_unorm16=True, stability_mode=False):
     os.makedirs(output_dir, exist_ok=True)
-    run_user_dir = os.path.join(user_dir, f"{scenario}-{int(time.time())}")
+    artifact_label = artifact_label or f"{scenario}_{render_target_path}"
+    run_user_dir = os.path.join(user_dir, f"{artifact_label}-{int(time.time())}")
     os.makedirs(run_user_dir, exist_ok=True)
 
     if scenario == "cold":
@@ -152,11 +235,12 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     initial_cache_files, initial_cache_bytes = get_dir_size_and_count(cache_dir)
     print(f"[{scenario.upper()}] Initial cache state: {initial_cache_files} files, {initial_cache_bytes / 1024:.1f} KB")
 
-    perf_csv_path = os.path.join(output_dir, f"n13_{scenario}_perf_frames.csv")
-    runtime_log_path = os.path.join(output_dir, f"n13_{scenario}_runtime.log")
+    perf_csv_path = os.path.join(output_dir, f"n13_{artifact_label}_perf_frames.csv")
+    runtime_log_path = os.path.join(output_dir, f"n13_{artifact_label}_runtime.log")
 
-    if os.path.exists(perf_csv_path):
-        os.remove(perf_csv_path)
+    for stale_path in (perf_csv_path, runtime_log_path):
+        if os.path.exists(stale_path):
+            os.remove(stale_path)
 
     cmd = [
         exe_path,
@@ -166,7 +250,8 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         "--mnk_mode=true",
         "--input_background=true",
         "--gpu_allow_invalid_fetch_constants=false",
-        "--render_target_path_d3d12=rov",
+        f"--render_target_path_d3d12={render_target_path}",
+        f"--gamma_render_target_as_unorm16={'true' if gamma_unorm16 else 'false'}",
         f"--perf_log_csv={perf_csv_path}",
         "--log_level=debug",
         f"--log_file={runtime_log_path}"
@@ -178,7 +263,9 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     runtime_env["NEVERDEAD_CAPTURE_DIR"] = output_dir
 
     print(f"[{scenario.upper()}] Launching NeverDead runtime...")
-    proc = subprocess.Popen(cmd, cwd=os.path.dirname(exe_path), env=runtime_env)
+    creationflags = subprocess.BELOW_NORMAL_PRIORITY_CLASS if stability_mode else 0
+    proc = subprocess.Popen(cmd, cwd=os.path.dirname(exe_path), env=runtime_env,
+                            creationflags=creationflags)
     h_proc = wintypes.HANDLE(ctypes.windll.kernel32.OpenProcess(0x1000 | 0x0400, False, proc.pid))
 
     rss_samples = []
@@ -204,9 +291,13 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             break
         time.sleep(0.2)
 
-    if hwnd:
-        print(f"[{scenario.upper()}] Window acquired: 0x{hwnd:X}")
-        user32.SetForegroundWindow(hwnd)
+    if not hwnd:
+        proc.terminate()
+        proc.wait(timeout=5)
+        if h_proc:
+            kernel32.CloseHandle(h_proc)
+        raise RuntimeError(f"{artifact_label} game window was not created")
+    print(f"[{scenario.upper()}] Window acquired: 0x{hwnd:X}")
 
     print(f"[{scenario.upper()}] Stage 1: Waiting 55s for intro & title screen...")
     for _ in range(550):
@@ -220,8 +311,11 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         time.sleep(0.1)
 
     if proc.poll() is not None:
-        print(f"[{scenario.upper()}] Process terminated prematurely at title boot!")
-        return None
+        if h_proc:
+            kernel32.CloseHandle(h_proc)
+        raise RuntimeError(
+            f"{artifact_label} process terminated at title boot (code {proc.returncode})"
+        )
 
     # Fresh profile route: title -> gamma -> autosave -> main menu -> difficulty -> prologue.
     print(f"[{scenario.upper()}] Stage 2: Tapping START (Return / X) to enter setup...")
@@ -245,20 +339,43 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     time.sleep(6.0)
 
     print(f"[{scenario.upper()}] Stage 5: Skipping Prologue cutscenes (START)...")
-    for _ in range(5):
+    for _ in range(8):
         tap_key(hwnd, VK_RETURN)
-        time.sleep(3.0)
-    tap_key(hwnd, VK_SPACE)  # Resume if the final START paused gameplay.
+        time.sleep(0.5)
+        tap_key(hwnd, VK_SPACE)  # Confirm skip, or resume if START paused gameplay.
+        time.sleep(2.5)
     time.sleep(10.0)
 
-    capture_trigger.write_text(f"n13-{scenario}-gameplay", encoding="ascii")
-    time.sleep(2.0)
+    capture_pattern = f"n13-{artifact_label}-gameplay-*.bmp"
+    captures_before = set(Path(output_dir).glob(capture_pattern))
+    capture_trigger.write_text(f"n13-{artifact_label}-gameplay", encoding="ascii")
+    capture_path = None
+    capture_deadline = time.time() + 5.0
+    while time.time() < capture_deadline:
+        new_captures = set(Path(output_dir).glob(capture_pattern)) - captures_before
+        if new_captures:
+            capture_path = max(new_captures, key=lambda path: path.stat().st_mtime)
+            break
+        time.sleep(0.2)
     print(f"[{scenario.upper()}] Stage 6: >>> 3D GAMEPLAY ACTIVE <<< Sampling {gameplay_duration_sec}s of real gameplay...")
-    
+
+    # Exclude boot, menus and cutscenes from every gameplay-only metric.
+    gameplay_csv_start = get_csv_size(perf_csv_path)
+    rss_samples.clear()
+    commit_samples.clear()
+    cpu_samples.clear()
+    if h_proc:
+        kernel32.GetProcessTimes(h_proc, ctypes.byref(creation_time), ctypes.byref(exit_time),
+                                 ctypes.byref(kernel_time_prev), ctypes.byref(user_time_prev))
+    time_prev = time.time()
+
     # Active gameplay interaction loop
     gameplay_start = time.time()
     gameplay_end = gameplay_start + gameplay_duration_sec
     cycle_counter = 0
+    stability_actions = {'combat': 0, 'pause_resume': 0, 'focus_cycles': 0}
+    next_pause = gameplay_start + 300.0
+    next_focus = gameplay_start + 450.0
 
     while time.time() < gameplay_end:
         if proc.poll() is not None:
@@ -288,7 +405,21 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
                     time_prev = now
 
         # Active player inputs to exercise Havok collision, character ragdoll, and D3D12 view frustum
-        mod_idx = cycle_counter % 5
+        now = time.time()
+        if stability_mode and now >= next_pause:
+            tap_key(hwnd, VK_RETURN)
+            time.sleep(2.0)
+            tap_key(hwnd, VK_ESCAPE)
+            stability_actions['pause_resume'] += 1
+            next_pause += 300.0
+        if stability_mode and now >= next_focus:
+            user32.ShowWindow(hwnd, 6)  # SW_MINIMIZE
+            time.sleep(2.0)
+            user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+            stability_actions['focus_cycles'] += 1
+            next_focus += 450.0
+
+        mod_idx = cycle_counter % 7
         if mod_idx == 0:
             hold_key(hwnd, VK_W, 1.2)  # Walk forward into environment
         elif mod_idx == 1:
@@ -300,9 +431,17 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             hold_key(hwnd, VK_A, 0.8)  # Strafe left
         elif mod_idx == 4:
             hold_key(hwnd, VK_S, 0.8)  # Step back
+        elif mod_idx == 5:
+            tap_key(hwnd, VK_E)        # Right trigger / primary combat
+            stability_actions['combat'] += 1
+        elif mod_idx == 6:
+            tap_key(hwnd, VK_Q)        # Left trigger / alternate combat
+            stability_actions['combat'] += 1
 
         cycle_counter += 1
         time.sleep(0.1)
+
+    gameplay_csv_end = get_csv_size(perf_csv_path)
 
     print(f"[{scenario.upper()}] Gameplay sampling finished. Terminating process...")
     if proc.poll() is None:
@@ -323,6 +462,9 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     # Parse per-frame CSV
     frame_times_ms = []
     fps_values = []
+    swap_cpu_times_ms = []
+    gpu_times_ms = []
+    present_times_ms = []
     draw_calls = []
     vertices = []
     stalls = []
@@ -335,11 +477,17 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     active_threads = []
     crit_contentions = []
     xma_frames = []
+    audio_latencies_us = []
+    audio_queue_depths = []
 
     if os.path.exists(perf_csv_path) and os.path.getsize(perf_csv_path) > 0:
-        with open(perf_csv_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
+        with open(perf_csv_path, 'rb') as f:
+            csv_bytes = f.read()
+            header_end = csv_bytes.find(b'\n') + 1
+            gameplay_csv = csv_bytes[:header_end] + csv_bytes[gameplay_csv_start:gameplay_csv_end]
+            reader = csv.DictReader(gameplay_csv.decode('utf-8', errors='ignore').splitlines())
+            gameplay_rows = list(reader)
+            for row in gameplay_rows:
                 try:
                     ft_us = float(row.get('frame_time_us', 0))
                     if ft_us > 0:
@@ -347,6 +495,15 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
                     fps = float(row.get('fps', 0))
                     if fps > 0:
                         fps_values.append(fps)
+                    swap_cpu_us = float(row.get('swap_cpu_time_us', 0))
+                    gpu_us = float(row.get('gpu_time_us', 0))
+                    present_us = float(row.get('present_time_us', 0))
+                    if swap_cpu_us > 0:
+                        swap_cpu_times_ms.append(swap_cpu_us / 1000.0)
+                    if gpu_us > 0:
+                        gpu_times_ms.append(gpu_us / 1000.0)
+                    if present_us > 0:
+                        present_times_ms.append(present_us / 1000.0)
                     draw_calls.append(int(row.get('draw_calls', 0)))
                     vertices.append(int(row.get('vertices_processed', 0)))
                     stalls.append(int(row.get('command_buffer_stalls', 0)))
@@ -359,11 +516,22 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
                     active_threads.append(int(row.get('active_threads', 0)))
                     crit_contentions.append(int(row.get('critical_region_contentions', 0)))
                     xma_frames.append(int(row.get('xma_frames_decoded', 0)))
+                    audio_latencies_us.append(int(row.get('audio_frame_latency_us', 0)))
+                    audio_queue_depths.append(int(row.get('buffer_queue_depth', 0)))
                 except (ValueError, KeyError):
                     continue
 
     sorted_fts = sorted(frame_times_ms)
     sorted_fps = sorted(fps_values)
+
+    def timing_summary(values):
+        sorted_values = sorted(values)
+        return {
+            'p50': calculate_percentile(sorted_values, 50),
+            'p95': calculate_percentile(sorted_values, 95),
+            'p99': calculate_percentile(sorted_values, 99),
+            'max': sorted_values[-1] if sorted_values else 0.0,
+        }
 
     total_frames = len(frame_times_ms)
     p50_ft = calculate_percentile(sorted_fts, 50)
@@ -382,6 +550,11 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     peak_rss = max(rss_samples) if rss_samples else 0.0
     avg_rss = sum(rss_samples) / len(rss_samples) if rss_samples else 0.0
     peak_commit = max(commit_samples) if commit_samples else 0.0
+    sample_window = min(10, len(rss_samples))
+    rss_growth = ((sum(rss_samples[-sample_window:]) - sum(rss_samples[:sample_window])) /
+                  sample_window) if sample_window else 0.0
+    commit_growth = ((sum(commit_samples[-sample_window:]) - sum(commit_samples[:sample_window])) /
+                     sample_window) if sample_window else 0.0
     avg_cpu = sum(cpu_samples) / len(cpu_samples) if cpu_samples else 0.0
     peak_cpu = max(cpu_samples) if cpu_samples else 0.0
 
@@ -414,6 +587,13 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
 
     results = {
         'scenario': scenario,
+        'run': artifact_label,
+        'render_target_path': render_target_path,
+        'measurement_window': {
+            'gameplay_csv_start_byte': gameplay_csv_start,
+            'gameplay_csv_end_byte': gameplay_csv_end,
+            'requested_seconds': gameplay_duration_sec,
+        },
         'frames_captured': total_frames,
         'frametime_ms': {
             'mean': (sum(frame_times_ms) / total_frames) if total_frames > 0 else 0.0,
@@ -430,10 +610,17 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             'min': min_fps,
             'p1_low': p1_low_fps,
         },
+        'timing_breakdown_ms': {
+            'swap_cpu': timing_summary(swap_cpu_times_ms),
+            'gpu': timing_summary(gpu_times_ms),
+            'present_call': timing_summary(present_times_ms),
+        },
         'memory_mb': {
             'peak_rss': peak_rss,
             'avg_rss': avg_rss,
             'peak_commit': peak_commit,
+            'rss_growth': rss_growth,
+            'commit_growth': commit_growth,
         },
         'cpu': {
             'avg_percent': avg_cpu,
@@ -458,6 +645,12 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             'max_critical_contentions': max(crit_contentions) if crit_contentions else 0,
             'total_xma_frames': sum(xma_frames)
         },
+        'audio': {
+            'latency_us_p95': calculate_percentile(sorted(audio_latencies_us), 95),
+            'latency_us_max': max(audio_latencies_us) if audio_latencies_us else 0,
+            'queue_depth_max': max(audio_queue_depths) if audio_queue_depths else 0,
+        },
+        'stability_actions': stability_actions,
         'log_health': {
             'fatal_crashes': fatal_errors,
             'd3d12_errors': d3d12_errors,
@@ -466,16 +659,57 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         }
     }
 
-    json_out = os.path.join(output_dir, f"n13_{scenario}_profile.json")
+    average_draw_calls = sum(draw_calls) / total_frames if total_frames else 0.0
+    capture_metrics = measure_bmp(capture_path) if capture_path else None
+    results['gameplay_gate'] = {
+        'passed': (total_frames >= gameplay_duration_sec * 20 and
+                   average_draw_calls >= 100 and capture_metrics is not None and
+                   capture_metrics['non_black_ratio'] > 0.75 and
+                   capture_metrics['average_luminance'] >= 10.0),
+        'average_draw_calls_per_frame': average_draw_calls,
+        'minimum_average_draw_calls_per_frame': 100,
+        'capture': str(capture_path) if capture_path else None,
+        'capture_metrics': capture_metrics,
+    }
+    results['performance_gate'] = {
+        'passed': (results['gameplay_gate']['passed'] and fatal_errors == 0 and
+                   (stability_mode or (p1_low_fps >= 26.0 and stutter_50ms <= 1))),
+        'stability_mode': stability_mode,
+        'minimum_1_percent_low_fps': 26.0,
+        'maximum_frames_over_50ms': 1,
+    }
+    results['visual_gate'] = (compare_bmp(reference_capture, capture_path)
+                              if reference_capture and capture_path else None)
+
+    json_out = os.path.join(output_dir, f"n13_{artifact_label}_profile.json")
     with open(json_out, 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=2)
 
     print(f"[{scenario.upper()}] Results saved to: {json_out}")
     print(f"  Frames Captured: {total_frames} | Median FPS: {median_fps:.1f} | Min FPS: {min_fps:.1f} | 1% Low: {p1_low_fps:.1f}")
     print(f"  Frametime (ms): Mean: {results['frametime_ms']['mean']:.2f} | p50: {p50_ft:.2f} | p95: {p95_ft:.2f} | p99: {p99_ft:.2f} | Max: {results['frametime_ms']['max']:.2f}")
+    print(f"  Timing p95 (ms): Swap CPU: {results['timing_breakdown_ms']['swap_cpu']['p95']:.2f} | GPU: {results['timing_breakdown_ms']['gpu']['p95']:.2f} | Present: {results['timing_breakdown_ms']['present_call']['p95']:.2f}")
     print(f"  Stutters: >33ms: {stutter_33ms} | >50ms: {stutter_50ms} | >100ms: {stutter_100ms}")
     print(f"  Memory: Peak RSS: {peak_rss:.1f} MB | Peak Commit: {peak_commit:.1f} MB | CPU Avg: {avg_cpu:.1f}% (Peak {peak_cpu:.1f}%)")
     print(f"  D3D12: Draw Calls: {sum(draw_calls)} | Vertices: {sum(vertices)} | Stalls: {sum(stalls)} | Pipeline Hits: {pipe_hit_rate:.1f}%")
+
+    if not results['gameplay_gate']['passed']:
+        capture_metrics = results['gameplay_gate']['capture_metrics'] or {}
+        raise RuntimeError(
+            f"{scenario} gameplay gate failed: {average_draw_calls:.1f} draw calls/frame, "
+            f"luminance {capture_metrics.get('average_luminance', 0.0):.1f}, "
+            f"non-black {capture_metrics.get('non_black_ratio', 0.0):.1%}"
+        )
+    if not results['performance_gate']['passed']:
+        raise RuntimeError(
+            f"{artifact_label} performance regression: 1% low {p1_low_fps:.1f} FPS, "
+            f"{stutter_50ms} frames over 50 ms"
+        )
+    if results['visual_gate'] and not results['visual_gate']['passed']:
+        raise RuntimeError(
+            f"{artifact_label} differs from ROV reference: "
+            f"{results['visual_gate']['luminance_delta_pct']:.1f}% luminance delta"
+        )
 
     return results
 
@@ -483,22 +717,67 @@ def main():
     parser = argparse.ArgumentParser(description="NeverDead N13 Real Gameplay Performance Benchmark")
     parser.add_argument("--scenario", choices=["cold", "warm", "both"], default="both")
     parser.add_argument("--duration", type=int, default=30, help="Interactive gameplay sampling duration in seconds")
+    parser.add_argument("--runs", type=int, choices=range(1, 6), default=1,
+                        help="Number of identical runs per cache scenario (1-5)")
+    parser.add_argument("--render-path", choices=["rov", "rtv"], default="rov")
+    parser.add_argument("--reference-capture",
+                        help="ROV BMP used to gate RTV visual equivalence")
+    parser.add_argument("--disable-gamma-unorm16", action="store_true",
+                        help="Test RTV without gamma render targets aliased as UNORM16")
+    parser.add_argument("--stability", action="store_true",
+                        help="Exercise combat, pause/resume and focus changes during a long soak")
+    parser.add_argument("--wait-for-idle", type=int, default=0, metavar="SECONDS",
+                        help="Wait for this much Windows input idle time before each run")
     parser.add_argument("--exe", default=r"C:\projetos\neverdead\build\n2-neverdead\neverdead.exe")
     parser.add_argument("--game-data", default=r"C:\projetos\NeverDeadxex")
     parser.add_argument("--output-dir", default=r"C:\projetos\neverdead\analysis\n13-benchmarks")
     parser.add_argument("--user-dir", default=r"C:\projetos\neverdead\analysis\n13-benchmarks\user_data")
     args = parser.parse_args()
 
+    args.exe = os.path.abspath(args.exe)
+    args.game_data = os.path.abspath(args.game_data)
+    args.output_dir = os.path.abspath(args.output_dir)
+    args.user_dir = os.path.abspath(args.user_dir)
+    if args.reference_capture:
+        args.reference_capture = os.path.abspath(args.reference_capture)
+
     cache_dir = os.path.join(args.output_dir, "shader_cache")
 
-    cold_res = None
-    warm_res = None
+    results_by_scenario = {}
+    scenarios = ["cold", "warm"] if args.scenario == "both" else [args.scenario]
+    for scenario in scenarios:
+        scenario_results = []
+        for run_index in range(args.runs):
+            wait_for_idle(args.wait_for_idle)
+            label_suffix = "_stability" if args.stability else ""
+            label = (f"{scenario}_{args.render_path}{label_suffix}" if args.runs == 1 else
+                     f"{scenario}_{args.render_path}_{run_index + 1:02}")
+            scenario_results.append(run_gameplay_benchmark(
+                scenario, args.duration, args.exe, args.game_data, cache_dir, args.user_dir,
+                args.output_dir, label, args.render_path, args.reference_capture,
+                not args.disable_gamma_unorm16, args.stability))
+        results_by_scenario[scenario] = scenario_results
+        if args.runs > 1:
+            aggregate = {
+                'passed': all(result['performance_gate']['passed'] for result in scenario_results),
+                'runs': scenario_results,
+                'summary': {
+                    'minimum_1_percent_low_fps': min(
+                        result['fps']['p1_low'] for result in scenario_results),
+                    'maximum_frames_over_50ms': max(
+                        result['frametime_ms']['stutters_gt_50ms'] for result in scenario_results),
+                    'maximum_p95_frametime_ms': max(
+                        result['frametime_ms']['p95'] for result in scenario_results),
+                },
+            }
+            aggregate_path = os.path.join(
+                args.output_dir, f"n15_{scenario}_{args.render_path}_repeats.json")
+            with open(aggregate_path, 'w', encoding='utf-8') as f:
+                json.dump(aggregate, f, indent=2)
+            print(f"[{scenario.upper()}] Repeat results saved to: {aggregate_path}")
 
-    if args.scenario in ["cold", "both"]:
-        cold_res = run_gameplay_benchmark("cold", args.duration, args.exe, args.game_data, cache_dir, args.user_dir, args.output_dir)
-
-    if args.scenario in ["warm", "both"]:
-        warm_res = run_gameplay_benchmark("warm", args.duration, args.exe, args.game_data, cache_dir, args.user_dir, args.output_dir)
+    cold_res = results_by_scenario.get("cold", [None])[0]
+    warm_res = results_by_scenario.get("warm", [None])[0]
 
     # Generate comparison CSV if both ran
     if cold_res and warm_res:

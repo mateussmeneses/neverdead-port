@@ -22,6 +22,13 @@ else()
 endif()
 
 rexglue_setup_target(neverdead)
+add_custom_target(neverdead_runtime_dll ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_FILE:rexgpu-xenos>"
+        "$<TARGET_FILE_DIR:neverdead>"
+    DEPENDS rexgpu-xenos
+)
+add_dependencies(neverdead neverdead_runtime_dll)
 
 configure_file(neverdead.toml neverdead.toml COPYONLY)
 
