@@ -30,10 +30,11 @@ delta and a maximum average channel delta of 58.65, well outside the 10% and
 12-point limits. The structured result is in
 [`n15_rtv_visual_gate.json`](n13-benchmarks/n15_rtv_visual_gate.json).
 
-The affected Asura chain uses 1120x640 `k_16_16_16_16_FLOAT` and
-`k_16_16_FLOAT` scene surfaces. Disabling gamma aliasing did not restore it, and
-`snorm16_render_target_full_range` applies to fixed16 host targets rather than
-these primary FLOAT16 surfaces.
+The affected Asura chain samples 1120x640 `k_16_16_16_16_FLOAT` and
+`k_16_16_FLOAT` scene surfaces, but the RTV log also creates the main EDRAM
+targets repeatedly as guest format 5 (`k_16_16_16_16`, fixed16). Disabling gamma
+aliasing did not restore the image. The profiler can now isolate
+`snorm16_render_target_full_range=false` in the next RTV capture.
 
 Comparison against Xenia revisions `95a5c3e` (2026-02-18) and `291f0c9`
 (2026-10-25) found the same integer ownership-transfer formats for FLOAT16
@@ -67,6 +68,14 @@ fix NeverDead, so it is not yet the primary suspect. Commit `4cc584f47` maps
 constant-alpha blending to D3D12 Options13 and provides a legacy fallback. It
 is applicable to the old RTV backend, but should be tested only if the smaller
 MIN/MAX correction fails the image gate so the cause remains attributable.
+
+Fixed16 is tested separately before either larger port. Xenia commit
+`42c2b880e` replaces the old `32/32767` approximation with the hardware's ten
+fractional bits (`1/1024`) in command constants, packing and unpacking. ReXGlue
+still has the old scale in all three locations, so this is applicable and a
+stronger NeverDead candidate than the gamma-only change. It will be ported only
+after the existing full-range toggle establishes whether fixed16 changes the
+dark gameplay result.
 
 ## 3. Long-run stability
 
