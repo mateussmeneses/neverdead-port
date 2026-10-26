@@ -56,6 +56,10 @@ jobs:
           }
           Write-Host "[OK] QA regression checks passed successfully."
 
+      - name: Test Gameplay Profiler Safety
+        shell: pwsh
+        run: python -m unittest analysis.test_profile_n13
+
       - name: Verify Live Test Runner Guard (Asset-Dependent Gate)
         shell: pwsh
         run: |
