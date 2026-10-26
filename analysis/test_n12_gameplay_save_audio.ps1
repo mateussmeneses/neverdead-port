@@ -9,7 +9,8 @@
 [CmdletBinding()]
 param(
     [string]$GameDataRoot = 'C:\projetos\NeverDeadxex',
-    [int]$WaitTitleSeconds = 55
+    [int]$WaitTitleSeconds = 55,
+    [int]$WaitForIdleSeconds = 300
 )
 
 $ErrorActionPreference = 'Stop'
@@ -68,6 +69,18 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 public static class N12InputBridge {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LASTINPUTINFO {
+        public uint cbSize;
+        public uint dwTime;
+    }
+
+    [DllImport("user32.dll")]
+    public static extern bool GetLastInputInfo(ref LASTINPUTINFO info);
+
+    [DllImport("kernel32.dll")]
+    public static extern uint GetTickCount();
+
     [DllImport("user32.dll")]
     public static extern uint MapVirtualKey(uint uCode, uint uMapType);
 
@@ -76,6 +89,17 @@ public static class N12InputBridge {
 
     [DllImport("kernel32.dll")]
     public static extern void Sleep(uint milliseconds);
+
+    public static uint GetLastInputTick() {
+        LASTINPUTINFO info = new LASTINPUTINFO();
+        info.cbSize = (uint)Marshal.SizeOf(typeof(LASTINPUTINFO));
+        if (!GetLastInputInfo(ref info)) throw new System.ComponentModel.Win32Exception();
+        return info.dwTime;
+    }
+
+    public static uint GetIdleMilliseconds() {
+        return unchecked(GetTickCount() - GetLastInputTick());
+    }
 
     public static bool TapKey(IntPtr hWnd, ushort vk) {
         if (hWnd == IntPtr.Zero) throw new ArgumentException("Game window is required");
@@ -111,6 +135,14 @@ public static class N12InputBridge {
     Add-Type -TypeDefinition $csharpSrc -ReferencedAssemblies System.Drawing
 }
 
+if ($WaitForIdleSeconds -gt 0) {
+    Write-Host "Waiting until Windows has been idle for $WaitForIdleSeconds seconds..."
+    while ([N12InputBridge]::GetIdleMilliseconds() -lt ($WaitForIdleSeconds * 1000)) {
+        Start-Sleep -Seconds 5
+    }
+}
+$initialInputTick = [N12InputBridge]::GetLastInputTick()
+
 # Clean any stale trigger file
 $triggerFile = Join-Path $buildRoot 'capture_trigger.txt'
 if (Test-Path -LiteralPath $triggerFile) {
@@ -135,6 +167,19 @@ Write-Host "Launching NeverDead runtime..."
 $proc = Start-Process -FilePath $exe -ArgumentList $arguments -WorkingDirectory $buildRoot -PassThru
 $proc.PriorityClass = 'BelowNormal'
 
+function Wait-N12Idle {
+    param([int]$Milliseconds)
+    $deadline = [DateTime]::UtcNow.AddMilliseconds($Milliseconds)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        if ([N12InputBridge]::GetLastInputTick() -ne $initialInputTick) {
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            throw 'N12 validation stopped because laptop activity resumed.'
+        }
+        $remaining = [int]($deadline - [DateTime]::UtcNow).TotalMilliseconds
+        Start-Sleep -Milliseconds ([Math]::Max(1, [Math]::Min(200, $remaining)))
+    }
+}
+
 # Locate main window
 $windowHandle = [IntPtr]::Zero
 $deadline = [DateTime]::UtcNow.AddSeconds(15)
@@ -144,7 +189,7 @@ while ([DateTime]::UtcNow -lt $deadline -and -not $proc.HasExited) {
     if ($windowHandle -ne [IntPtr]::Zero) {
         break
     }
-    Start-Sleep -Milliseconds 250
+    Wait-N12Idle -Milliseconds 250
 }
 
 if ($windowHandle -ne [IntPtr]::Zero) {
@@ -167,7 +212,7 @@ function Take-N12Capture {
             $foundBmp = $bmps[0]
             break
         }
-        Start-Sleep -Milliseconds 200
+        Wait-N12Idle -Milliseconds 200
     }
 
     if ($foundBmp) {
@@ -204,7 +249,7 @@ function Take-N12Capture {
 }
 
 Write-Host "`nWaiting $WaitTitleSeconds seconds for shader pipelines and title screen..."
-Start-Sleep -Seconds $WaitTitleSeconds
+Wait-N12Idle -Milliseconds ($WaitTitleSeconds * 1000)
 
 # Stage 1: Title Screen Boot
 Take-N12Capture -StageName "01-title-boot" -Description "Title screen waiting for Start input"
@@ -212,65 +257,65 @@ Take-N12Capture -StageName "01-title-boot" -Description "Title screen waiting fo
 # Stage 2: Tap START to trigger Device Selector and Save Enumeration
 Write-Host "Tapping START (Return / X) to enumerate save and load profile..."
 [void][N12InputBridge]::TapKey($windowHandle, 13) # VK_RETURN
-Start-Sleep -Milliseconds 500
+Wait-N12Idle -Milliseconds 500
 [void][N12InputBridge]::TapKey($windowHandle, 88) # 'X' key (Start bind)
-Start-Sleep -Seconds 3
+Wait-N12Idle -Milliseconds 3000
 Take-N12Capture -StageName "02-save-enumerated-menu" -Description "Main Menu after savegame detection"
 
 # Stage 3: Navigate Menu / Options
 Write-Host "Tapping DOWN (Down Arrow) to test menu navigation..."
 [void][N12InputBridge]::TapKey($windowHandle, 40) # VK_DOWN
-Start-Sleep -Seconds 1
+Wait-N12Idle -Milliseconds 1000
 Take-N12Capture -StageName "03-menu-navigation" -Description "Menu selection cursor moved"
 
 # Stage 4: Select Campaign / Continue / New Game
 Write-Host "Tapping UP (Up Arrow) and A (Space) to select Campaign..."
 [void][N12InputBridge]::TapKey($windowHandle, 38) # VK_UP
-Start-Sleep -Milliseconds 500
+Wait-N12Idle -Milliseconds 500
 [void][N12InputBridge]::TapKey($windowHandle, 32) # VK_SPACE (A)
-Start-Sleep -Seconds 2
+Wait-N12Idle -Milliseconds 2000
 Take-N12Capture -StageName "04-campaign-prompt" -Description "Campaign selection prompt"
 
 # Stage 5: Confirm and start sequence
 Write-Host "Tapping A (Space) to confirm and enter prologue..."
 [void][N12InputBridge]::TapKey($windowHandle, 32) # VK_SPACE (A)
-Start-Sleep -Seconds 4
+Wait-N12Idle -Milliseconds 4000
 Take-N12Capture -StageName "05-prologue-cinematic" -Description "Prologue cutscene with audio sync"
 
 # Stage 6: Skip cutscene into 3D gameplay
 Write-Host "Tapping START to transition into 3D gameplay..."
 [void][N12InputBridge]::TapKey($windowHandle, 13) # VK_RETURN (START)
-Start-Sleep -Seconds 4
+Wait-N12Idle -Milliseconds 4000
 Take-N12Capture -StageName "06-gameplay-active" -Description "3D gameplay scene active"
 
 # Stage 7: Character Movement & Physics Collision (Bryce WASD)
 Write-Host "Testing Havok movement & world collision: Holding W (Forward) for 2s..."
 [void][N12InputBridge]::HoldKey($windowHandle, 87, 2000) # 'W'
-Start-Sleep -Milliseconds 500
+Wait-N12Idle -Milliseconds 500
 Take-N12Capture -StageName "07-physics-movement" -Description "Bryce moving with character collision"
 
 # Stage 8: Camera Rotation
 Write-Host "Testing Camera yaw control: Holding Right Arrow for 1.5s..."
 [void][N12InputBridge]::HoldKey($windowHandle, 39, 1500) # VK_RIGHT
-Start-Sleep -Milliseconds 500
+Wait-N12Idle -Milliseconds 500
 Take-N12Capture -StageName "08-camera-yaw" -Description "Camera perspective rotation"
 
 # Stage 9: Action & Roll State (Space / B)
 Write-Host "Testing Action / Combat state: Tapping Space (Jump/Roll)..."
 [void][N12InputBridge]::TapKey($windowHandle, 32) # VK_SPACE
-Start-Sleep -Milliseconds 600
+Wait-N12Idle -Milliseconds 600
 Take-N12Capture -StageName "09-action-roll" -Description "Character roll/jump state"
 
 # Stage 10: In-Game Pause Menu
 Write-Host "Testing In-Game Pause: Tapping Return (START)..."
 [void][N12InputBridge]::TapKey($windowHandle, 13) # VK_RETURN (START)
-Start-Sleep -Seconds 2
+Wait-N12Idle -Milliseconds 2000
 Take-N12Capture -StageName "10-pause-menu" -Description "In-game pause menu opened"
 
 # Stage 11: Resume from Pause
 Write-Host "Testing Resume: Tapping Escape/B to resume..."
 [void][N12InputBridge]::TapKey($windowHandle, 27) # VK_ESCAPE
-Start-Sleep -Seconds 2
+Wait-N12Idle -Milliseconds 2000
 Take-N12Capture -StageName "11-gameplay-resumed" -Description "Gameplay resumed after pause"
 
 Write-Host "`nTerminating NeverDead process cleanly..."

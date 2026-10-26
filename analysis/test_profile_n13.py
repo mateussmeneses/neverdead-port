@@ -36,6 +36,8 @@ class TargetedInputTests(unittest.TestCase):
         harness = (Path(profile.__file__).parent / 'test_n12_gameplay_save_audio.ps1').read_text()
         self.assertNotIn('SetForegroundWindow', harness)
         self.assertNotIn('SendInput', harness)
+        self.assertIn('WaitForIdleSeconds = 300', harness)
+        self.assertIn('laptop activity resumed', harness)
 
     def test_input_is_sent_only_to_game_window(self):
         class FakeUser32:
