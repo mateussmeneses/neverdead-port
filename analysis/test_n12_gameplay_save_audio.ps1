@@ -16,6 +16,14 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+trap {
+    if ($_.Exception.Message -eq 'N12 validation stopped because laptop activity resumed.') {
+        exit 75
+    }
+    Write-Error $_.Exception.Message
+    exit 1
+}
+
 $root = Split-Path $PSScriptRoot -Parent
 $buildRoot = Join-Path $root 'build\n2-neverdead'
 $exe = Join-Path $buildRoot 'neverdead.exe'
@@ -41,9 +49,12 @@ $headerFile = Join-Path $userDir 'B13EBABEBABEBABE\4B4E081F\Headers\00000001\ND.
 
 $initialSaveSize = 0
 $initialSaveHash = ""
+$initialSaveWriteUtc = $null
 if (Test-Path -LiteralPath $saveFile -PathType Leaf) {
-    $initialSaveSize = (Get-Item -LiteralPath $saveFile).Length
+    $initialSaveItem = Get-Item -LiteralPath $saveFile
+    $initialSaveSize = $initialSaveItem.Length
     $initialSaveHash = (Get-FileHash -LiteralPath $saveFile -Algorithm SHA256).Hash
+    $initialSaveWriteUtc = $initialSaveItem.LastWriteTimeUtc.ToString('o')
     Write-Host "Found Pre-Existing Save: ND.sav ($initialSaveSize bytes, SHA: $initialSaveHash)" -ForegroundColor Green
 } else {
     Write-Warning "Save file ND.sav not found at '$saveFile'. A new save will be generated."
@@ -202,12 +213,15 @@ function Take-N12Capture {
     param([string]$StageName, [string]$Description)
     $cleanStage = $StageName -replace '[^a-zA-Z0-9_\-]', '_'
     
+    $captureStartedUtc = [DateTime]::UtcNow
     Set-Content -LiteralPath $triggerFile -Value "n12-$cleanStage" -Encoding ASCII
 
     $bmpDeadline = [DateTime]::UtcNow.AddSeconds(5)
     $foundBmp = $null
     while ([DateTime]::UtcNow -lt $bmpDeadline) {
-        $bmps = @(Get-ChildItem -Path $captureDir -Filter "n12-${cleanStage}-*.bmp" -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending)
+        $bmps = @(Get-ChildItem -Path $captureDir -Filter "n12-${cleanStage}-*.bmp" -File -ErrorAction SilentlyContinue |
+            Where-Object LastWriteTimeUtc -ge $captureStartedUtc |
+            Sort-Object LastWriteTime -Descending)
         if ($bmps.Count -gt 0) {
             $foundBmp = $bmps[0]
             break
@@ -339,6 +353,9 @@ $deviceSelectorCalls = @([regex]::Matches($logContent, 'XamShowDeviceSelectorUI'
 $saveMounts = @([regex]::Matches($logContent, 'Registered symbolic link: save:')).Count
 $finalSaveSize = if (Test-Path -LiteralPath $saveFile) { (Get-Item -LiteralPath $saveFile).Length } else { 0 }
 $finalSaveHash = if (Test-Path -LiteralPath $saveFile) { (Get-FileHash -LiteralPath $saveFile -Algorithm SHA256).Hash } else { "" }
+$finalSaveWriteUtc = if (Test-Path -LiteralPath $saveFile) {
+    (Get-Item -LiteralPath $saveFile).LastWriteTimeUtc.ToString('o')
+} else { $null }
 
 # 2. Audio & XMA Audit
 $xmaInit = @([regex]::Matches($logContent, 'XMA: Registered MMIO handlers')).Count
@@ -383,6 +400,9 @@ $report = @{
         FinalSize = $finalSaveSize
         InitialHash = $initialSaveHash
         FinalHash = $finalSaveHash
+        InitialWriteUtc = $initialSaveWriteUtc
+        FinalWriteUtc = $finalSaveWriteUtc
+        WasWritten = ($finalSaveWriteUtc -and $finalSaveWriteUtc -ne $initialSaveWriteUtc)
         ItemsEnumerated = [int]$itemsFound
         SaveMountCount = $saveMounts
         DeviceSelectorTriggered = ($deviceSelectorCalls -gt 0)

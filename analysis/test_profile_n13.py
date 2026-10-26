@@ -38,6 +38,15 @@ class TargetedInputTests(unittest.TestCase):
         self.assertNotIn('SendInput', harness)
         self.assertIn('WaitForIdleSeconds = 300', harness)
         self.assertIn('laptop activity resumed', harness)
+        self.assertIn('exit 75', harness)
+        self.assertIn('Where-Object LastWriteTimeUtc -ge $captureStartedUtc', harness)
+
+    def test_save_reopen_runner_retries_only_user_activity(self):
+        runner = (Path(profile.__file__).parent / 'test_n15_save_reopen.ps1').read_text()
+        self.assertIn('$LASTEXITCODE -eq 75', runner)
+        self.assertIn('$LASTEXITCODE -ne 0', runner)
+        self.assertIn('$first.SavePersistence.FinalHash -eq $second.SavePersistence.InitialHash',
+                      runner)
 
     def test_input_is_sent_only_to_game_window(self):
         class FakeUser32:
