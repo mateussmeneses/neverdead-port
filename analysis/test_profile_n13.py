@@ -73,6 +73,24 @@ class TargetedInputTests(unittest.TestCase):
             profile.wait_for_idle(5)
         sleep.assert_called_once_with(5.0)
 
+    def test_user_activity_stops_background_game(self):
+        class FakeProcess:
+            def __init__(self):
+                self.terminated = False
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                self.terminated = True
+
+        process = FakeProcess()
+        detected = profile.threading.Event()
+        with patch.object(profile, 'get_last_input_tick', return_value=11):
+            profile.stop_process_when_user_returns(process, detected, 10)
+        self.assertTrue(process.terminated)
+        self.assertTrue(detected.is_set())
+
 
 class ProfilerMutexTests(unittest.TestCase):
     def test_rejects_a_second_profiler(self):

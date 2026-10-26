@@ -25,6 +25,7 @@ import shutil
 import struct
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -149,13 +150,16 @@ def compare_bmp(reference_path, candidate_path):
     }
 
 def get_idle_seconds():
+    return ((ctypes.windll.kernel32.GetTickCount() - get_last_input_tick()) & 0xFFFFFFFF) / 1000.0
+
+def get_last_input_tick():
     class LASTINPUTINFO(ctypes.Structure):
         _fields_ = [('cbSize', wintypes.UINT), ('dwTime', wintypes.DWORD)]
 
     info = LASTINPUTINFO(ctypes.sizeof(LASTINPUTINFO), 0)
     if not user32.GetLastInputInfo(ctypes.byref(info)):
         raise ctypes.WinError()
-    return ((ctypes.windll.kernel32.GetTickCount() - info.dwTime) & 0xFFFFFFFF) / 1000.0
+    return info.dwTime
 
 def wait_for_idle(required_seconds):
     if required_seconds <= 0:
@@ -172,6 +176,14 @@ def acquire_profiler_mutex():
         kernel32.CloseHandle(handle)
         raise RuntimeError("Another NeverDead gameplay profiler is already running")
     return handle
+
+def stop_process_when_user_returns(proc, detected, initial_input_tick, poll_seconds=0.5):
+    while proc.poll() is None:
+        if get_last_input_tick() != initial_input_tick:
+            detected.set()
+            proc.terminate()
+            return
+        time.sleep(poll_seconds)
 
 # Win32 Window & Input Helpers
 user32 = ctypes.windll.user32
@@ -231,7 +243,8 @@ def hold_key(hwnd, vk, duration_sec):
 
 def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_root, cache_dir,
                            user_dir, output_dir, artifact_label=None, render_target_path="rov",
-                           reference_capture=None, gamma_unorm16=True, stability_mode=False):
+                           reference_capture=None, gamma_unorm16=True, stability_mode=False,
+                           stop_on_user_activity=False):
     os.makedirs(output_dir, exist_ok=True)
     artifact_label = artifact_label or f"{scenario}_{render_target_path}"
     run_user_dir = os.path.join(user_dir, f"{artifact_label}-{int(time.time())}")
@@ -280,6 +293,11 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     creationflags = subprocess.BELOW_NORMAL_PRIORITY_CLASS if stability_mode else 0
     proc = subprocess.Popen(cmd, cwd=os.path.dirname(exe_path), env=runtime_env,
                             creationflags=creationflags)
+    user_activity_detected = threading.Event()
+    if stop_on_user_activity:
+        threading.Thread(target=stop_process_when_user_returns,
+                         args=(proc, user_activity_detected, get_last_input_tick()),
+                         daemon=True).start()
     h_proc = wintypes.HANDLE(ctypes.windll.kernel32.OpenProcess(0x1000 | 0x0400, False, proc.pid))
 
     rss_samples = []
@@ -468,6 +486,9 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
 
     if h_proc:
         kernel32.CloseHandle(h_proc)
+
+    if user_activity_detected.is_set():
+        raise RuntimeError(f"{artifact_label} stopped because laptop activity resumed")
 
     final_cache_files, final_cache_bytes = get_dir_size_and_count(cache_dir)
     new_cache_files = final_cache_files - initial_cache_files
@@ -771,7 +792,8 @@ def main():
             scenario_results.append(run_gameplay_benchmark(
                 scenario, args.duration, args.exe, args.game_data, cache_dir, args.user_dir,
                 args.output_dir, label, args.render_path, args.reference_capture,
-                not args.disable_gamma_unorm16, args.stability))
+                not args.disable_gamma_unorm16, args.stability,
+                bool(args.wait_for_idle)))
         results_by_scenario[scenario] = scenario_results
         if args.runs > 1:
             aggregate = {
