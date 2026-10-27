@@ -166,6 +166,10 @@ content. Checkpoint counts advance only when a previously unseen `.sav` hash is
 observed; timestamp-only rewrites no longer satisfy persistence. This matters
 because nearly all historical short-run saves have identical content despite
 different modification times.
+For runs of at least 30 minutes, the gate now also rejects RSS or commit growth
+above 256 MB, a linear trend above 8 MB/min, or shader-cache growth above 64 MB
+or 10,000 files. These limits are intentionally above the historical 30-minute
+sample (92 MB RSS, 97 MB commit) and the observed sub-80 KB cache growth.
 
 The older N12 report proves that an existing `ND.sav` is enumerated and remains
 byte-identical after relaunch, but it does not close the N15 save gate: its

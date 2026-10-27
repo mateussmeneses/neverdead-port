@@ -150,6 +150,8 @@ def evaluate_stability_gate(results, requested_seconds):
     actions = results['stability_actions']
     health = results['log_health']
     save_persistence = results['save_persistence']
+    memory = results['memory_mb']
+    caches = results['gpu_and_caches']
     initial_save_hashes = get_save_content_hashes(save_persistence['initial_files'])
     final_save_hashes = get_save_content_hashes(save_persistence['final_files'])
     checks = {
@@ -167,13 +169,34 @@ def evaluate_stability_gate(results, requested_seconds):
             bool(set(final_save_hashes.values()) - set(initial_save_hashes.values()))
             if requested_seconds >= 1800 else True
         ),
+        'bounded_memory_growth': (
+            memory['rss_growth'] <= 256.0 and
+            memory['commit_growth'] <= 256.0 and
+            memory['rss_slope_mb_per_min'] <= 8.0 and
+            memory['commit_slope_mb_per_min'] <= 8.0
+            if requested_seconds >= 1800 else True
+        ),
+        'bounded_cache_growth': (
+            caches['shader_cache_files_new'] <= 10000 and
+            caches['shader_cache_bytes_new'] <= 64 * 1024 * 1024
+            if requested_seconds >= 1800 else True
+        ),
         'audio_xma_active': results['ppc_and_system']['total_xma_frames'] > 0,
         'audio_underruns': results['audio']['buffer_underruns'] == 0,
         'fatal_crashes': health['fatal_crashes'] == 0,
         'd3d12_errors': health['d3d12_errors'] == 0,
         'dred_faults': health['dred_faults'] == 0,
     }
-    return {'passed': all(checks.values()), 'checks': checks}
+    return {
+        'passed': all(checks.values()),
+        'checks': checks,
+        'limits': {
+            'maximum_memory_growth_mb': 256.0,
+            'maximum_memory_slope_mb_per_min': 8.0,
+            'maximum_shader_cache_files_new': 10000,
+            'maximum_shader_cache_bytes_new': 64 * 1024 * 1024,
+        },
+    }
 
 def get_csv_size(path):
     return os.path.getsize(path) if os.path.exists(path) else 0

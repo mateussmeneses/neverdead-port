@@ -59,6 +59,9 @@ class StabilityGateTests(unittest.TestCase):
         results = {
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1800.0},
+            'memory_mb': {'rss_growth': 92.0, 'commit_growth': 97.0,
+                          'rss_slope_mb_per_min': 3.1, 'commit_slope_mb_per_min': 3.2},
+            'gpu_and_caches': {'shader_cache_files_new': 2, 'shader_cache_bytes_new': 80000},
             'save_persistence': {
                 'initial_files': {'ND.sav': {'sha256': 'A'}},
                 'final_files': {'ND.sav': {'sha256': 'B'}},
@@ -82,11 +85,20 @@ class StabilityGateTests(unittest.TestCase):
         results['audio']['buffer_underruns'] = 0
         results['stability_actions']['checkpoint_saves'] = 1
         self.assertFalse(profile.evaluate_stability_gate(results, 1800)['passed'])
+        results['stability_actions']['checkpoint_saves'] = 2
+        results['memory_mb']['rss_slope_mb_per_min'] = 8.1
+        self.assertFalse(profile.evaluate_stability_gate(results, 1800)['checks']['bounded_memory_growth'])
+        results['memory_mb']['rss_slope_mb_per_min'] = 3.1
+        results['gpu_and_caches']['shader_cache_bytes_new'] = 64 * 1024 * 1024 + 1
+        self.assertFalse(profile.evaluate_stability_gate(results, 1800)['checks']['bounded_cache_growth'])
 
     def test_rejects_early_exit_even_with_enough_frames(self):
         results = {
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1200.0, 'rendered_seconds': 1200.0},
+            'memory_mb': {'rss_growth': 0.0, 'commit_growth': 0.0,
+                          'rss_slope_mb_per_min': 0.0, 'commit_slope_mb_per_min': 0.0},
+            'gpu_and_caches': {'shader_cache_files_new': 0, 'shader_cache_bytes_new': 0},
             'save_persistence': {
                 'initial_files': {'ND.sav': {'sha256': 'A'}},
                 'final_files': {'ND.sav': {'sha256': 'B'}},
@@ -109,6 +121,9 @@ class StabilityGateTests(unittest.TestCase):
         results = {
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1200.0},
+            'memory_mb': {'rss_growth': 0.0, 'commit_growth': 0.0,
+                          'rss_slope_mb_per_min': 0.0, 'commit_slope_mb_per_min': 0.0},
+            'gpu_and_caches': {'shader_cache_files_new': 0, 'shader_cache_bytes_new': 0},
             'save_persistence': {
                 'initial_files': {'ND.sav': {'sha256': 'A'}},
                 'final_files': {'ND.sav': {'sha256': 'B'}},
@@ -131,6 +146,9 @@ class StabilityGateTests(unittest.TestCase):
         results = {
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1800.0},
+            'memory_mb': {'rss_growth': 0.0, 'commit_growth': 0.0,
+                          'rss_slope_mb_per_min': 0.0, 'commit_slope_mb_per_min': 0.0},
+            'gpu_and_caches': {'shader_cache_files_new': 0, 'shader_cache_bytes_new': 0},
             'save_persistence': {'initial_files': {}, 'final_files': {}},
             'stability_actions': {
                 'combat': 1,
@@ -150,6 +168,9 @@ class StabilityGateTests(unittest.TestCase):
         results = {
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1800.0},
+            'memory_mb': {'rss_growth': 0.0, 'commit_growth': 0.0,
+                          'rss_slope_mb_per_min': 0.0, 'commit_slope_mb_per_min': 0.0},
+            'gpu_and_caches': {'shader_cache_files_new': 0, 'shader_cache_bytes_new': 0},
             'save_persistence': {
                 'initial_files': {'ND.sav': {'sha256': 'A', 'modified_ns': 1}},
                 'final_files': {'Renamed.sav': {'sha256': 'A', 'modified_ns': 2}},
