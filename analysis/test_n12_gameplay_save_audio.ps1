@@ -297,8 +297,12 @@ Take-N12Capture -StageName "03-menu-navigation" -Description "Menu selection cur
 
 # Stage 4: Select Campaign / Continue / New Game
 $saveReadMarker = 'Read save file:'
+$pauseThunkMarker = 'N15 gameplay pause thunk 0x8253B640 reached'
 $saveReadsBeforeCampaign = if (Test-Path -LiteralPath $logPath) {
     @([regex]::Matches((Get-Content -LiteralPath $logPath -Raw), $saveReadMarker)).Count
+} else { 0 }
+$pauseThunkCallsBeforeCampaign = if (Test-Path -LiteralPath $logPath) {
+    @([regex]::Matches((Get-Content -LiteralPath $logPath -Raw), $pauseThunkMarker)).Count
 } else { 0 }
 Write-Host "Tapping UP (Up Arrow) and A (Space) to select Campaign..."
 [void][N12InputBridge]::TapKey($windowHandle, 38) # VK_UP
@@ -349,6 +353,12 @@ Write-Host "Testing Resume: Tapping Escape/B to resume..."
 Wait-N12Idle -Milliseconds 2000
 Take-N12Capture -StageName "11-gameplay-resumed" -Description "Gameplay resumed after pause"
 
+# Exercise the alternate pause dispatch path seen during the long stability run.
+[void][N12InputBridge]::TapKey($windowHandle, 13) # VK_RETURN (START)
+Wait-N12Idle -Milliseconds 1500
+[void][N12InputBridge]::TapKey($windowHandle, 27) # VK_ESCAPE
+Wait-N12Idle -Milliseconds 1500
+
 Write-Host "`nTerminating NeverDead process cleanly..."
 try {
     Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
@@ -371,6 +381,10 @@ $saveMounts = @([regex]::Matches($logContent, 'Registered symbolic link: save:')
 $saveReadsAfterCampaign = [Math]::Max(
     0,
     @([regex]::Matches($logContent, $saveReadMarker)).Count - $saveReadsBeforeCampaign
+)
+$pauseThunkCallsAfterCampaign = [Math]::Max(
+    0,
+    @([regex]::Matches($logContent, $pauseThunkMarker)).Count - $pauseThunkCallsBeforeCampaign
 )
 $finalSaveSize = if (Test-Path -LiteralPath $saveFile) { (Get-Item -LiteralPath $saveFile).Length } else { 0 }
 $finalSaveHash = if (Test-Path -LiteralPath $saveFile) { (Get-FileHash -LiteralPath $saveFile -Algorithm SHA256).Hash } else { "" }
@@ -427,6 +441,7 @@ $report = @{
         ItemsEnumerated = [int]$itemsFound
         SaveMountCount = $saveMounts
         SaveFileReadsAfterCampaign = $saveReadsAfterCampaign
+        GameplayPauseThunkCallsAfterCampaign = $pauseThunkCallsAfterCampaign
         DeviceSelectorTriggered = ($deviceSelectorCalls -gt 0)
     }
     AudioAudit = @{

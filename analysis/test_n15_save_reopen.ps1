@@ -57,16 +57,22 @@ $persistencePassed = (
     $reopen.StabilityAudit.D3D12Errors -eq 0 -and
     $reopen.StabilityAudit.DredFaults -eq 0
 )
+$continueVerified = (
+    $persistencePassed -and
+    $reopen.SavePersistence.SaveFileReadsAfterCampaign -gt 0 -and
+    $reopen.SavePersistence.GameplayPauseThunkCallsAfterCampaign -gt 0
+)
 
 $aggregate = [ordered]@{
     PersistencePassed = $persistencePassed
-    ContinueVerified = $false
+    ContinueVerified = $continueVerified
     SoakProfile = (Resolve-Path -LiteralPath $SoakProfilePath).Path
     UserDataRoot = $userDir
     ExpectedSaveHash = $expectedSaveHash
     PersistedSaveReopened = $persistedSaveReopened
     ReopenItemsEnumerated = $reopen.SavePersistence.ItemsEnumerated
     SaveFileReadsAfterCampaign = $reopen.SavePersistence.SaveFileReadsAfterCampaign
+    GameplayPauseThunkCallsAfterCampaign = $reopen.SavePersistence.GameplayPauseThunkCallsAfterCampaign
     ReopenCaptures = @($reopen.Captures).Count
     ReopenReport = 'n15_save_reopen_cycle_report.json'
 }
@@ -81,4 +87,7 @@ if (-not $persistencePassed) {
     throw "Save persistence -> close -> reopen gate failed. See '$aggregatePath'."
 }
 Write-Host "Save persistence -> close -> reopen gate PASS: $aggregatePath"
-Write-Warning 'Continue remains unverified until the resumed gameplay route is validated.'
+if (-not $continueVerified) {
+    throw "Continue did not produce save-read and resumed-gameplay pause evidence. See '$aggregatePath'."
+}
+Write-Host "Save -> close -> reopen -> Continue PASS: $aggregatePath"

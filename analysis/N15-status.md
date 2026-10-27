@@ -146,7 +146,7 @@ without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
 still terminates the game. The soak now uses the validated Right Arrow camera
-yaw and holds aim while firing. Twenty-one unit tests cover the profiler and controller.
+yaw and holds aim while firing. Twenty-two unit tests cover the profiler and controller.
 Input is sent only to the game window, the game runs below normal priority, and a named
 mutex prevents concurrent profilers. Unattended runs now require a 15-minute
 idle window; the queue is intentionally stopped while the laptop is in active
@@ -192,6 +192,10 @@ The runtime now emits a targeted DEBUG marker only when a `.sav` read succeeds
 with nonzero bytes. The reopen report counts only reads after campaign selection,
 separating save enumeration and writes from actual load activity; this is
 necessary evidence for Continue, but does not replace resumed-gameplay proof.
+The title now also hooks the evidence-backed `0x8253B640` pause thunk without
+changing its behavior. Continue passes only when the same reopen session both
+reads save data after campaign selection and reaches this gameplay pause path;
+the harness exercises a second pause/resume cycle to cover the alternate thunk.
 
 ## 4. Remaining acceptance checks
 

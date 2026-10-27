@@ -13,6 +13,7 @@ include(generated/rexglue.cmake)
 # Sources
 set(NEVERDEAD_SOURCES
     src/main.cpp
+    src/neverdead_diagnostics.cpp
 )
 
 if(WIN32)

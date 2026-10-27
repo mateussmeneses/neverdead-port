@@ -235,6 +235,9 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('Local\\NeverDeadGameplayProfiler', harness)
         self.assertIn("$saveReadMarker = 'Read save file:'", harness)
         self.assertIn('SaveFileReadsAfterCampaign = $saveReadsAfterCampaign', harness)
+        self.assertIn("$pauseThunkMarker = 'N15 gameplay pause thunk 0x8253B640 reached'", harness)
+        self.assertIn('GameplayPauseThunkCallsAfterCampaign = $pauseThunkCallsAfterCampaign',
+                      harness)
 
     def test_save_reopen_runner_uses_soak_user_data_root(self):
         runner = (Path(profile.__file__).parent / 'test_n15_save_reopen.ps1').read_text()
@@ -245,8 +248,8 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('$expectedSaveHash -eq $reopen.SavePersistence.InitialHash', runner)
         self.assertIn('$soak.stability_gate.checks.checkpoint_state_persisted', runner)
         self.assertIn('SaveFileReadsAfterCampaign', runner)
-        self.assertIn('ContinueVerified = $false', runner)
-        self.assertNotIn('continue gate PASS', runner)
+        self.assertIn('GameplayPauseThunkCallsAfterCampaign -gt 0', runner)
+        self.assertIn('ContinueVerified = $continueVerified', runner)
 
     def test_rtv_fixed16_ab_runner_is_idle_guarded(self):
         runner = (Path(profile.__file__).parent / 'run_n15_rtv_fixed16_ab.ps1').read_text()
@@ -272,6 +275,12 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('-SoakProfilePath $profilePath', runner)
         self.assertIn('$reopen.ContinueVerified', runner)
         self.assertIn('if (-not $passed)', runner)
+
+    def test_pause_diagnostic_preserves_original_thunk(self):
+        diagnostic = (Path(profile.__file__).parents[1] / 'src' / 'src' /
+                      'neverdead_diagnostics.cpp').read_text()
+        self.assertIn('REX_FUNC(sub_8253B640)', diagnostic)
+        self.assertIn('__imp__sub_8253B640(ctx, base);', diagnostic)
 
     def test_input_is_sent_only_to_game_window(self):
         class FakeUser32:
