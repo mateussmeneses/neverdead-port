@@ -272,6 +272,7 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('[ValidateRange(1800, 3600)]', runner)
         self.assertIn("'--stability'", runner)
         self.assertIn('$profileFile.LastWriteTimeUtc -lt $runStartedUtc', runner)
+        self.assertIn('$exeFile.LastWriteTimeUtc -lt $newestEvidenceSource.LastWriteTimeUtc', runner)
         self.assertIn('-SoakProfilePath $profilePath', runner)
         self.assertIn('$reopen.ContinueVerified', runner)
         self.assertIn('if (-not $passed)', runner)
@@ -279,8 +280,10 @@ class TargetedInputTests(unittest.TestCase):
     def test_pause_diagnostic_preserves_original_thunk(self):
         diagnostic = (Path(profile.__file__).parents[1] / 'src' / 'src' /
                       'neverdead_diagnostics.cpp').read_text()
+        cmake = (Path(profile.__file__).parents[1] / 'src' / 'CMakeLists.txt').read_text()
         self.assertIn('REX_FUNC(sub_8253B640)', diagnostic)
         self.assertIn('__imp__sub_8253B640(ctx, base);', diagnostic)
+        self.assertIn('src/neverdead_diagnostics.cpp', cmake)
 
     def test_input_is_sent_only_to_game_window(self):
         class FakeUser32:

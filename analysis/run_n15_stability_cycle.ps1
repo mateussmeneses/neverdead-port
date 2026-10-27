@@ -12,11 +12,26 @@ $PSNativeCommandUseErrorActionPreference = $false
 
 $profiler = Join-Path $PSScriptRoot 'profile_n13.py'
 $reopenRunner = Join-Path $PSScriptRoot 'test_n15_save_reopen.ps1'
+$root = Split-Path $PSScriptRoot -Parent
+$exe = Join-Path $root 'build\n2-neverdead\neverdead.exe'
+$runtimeEvidenceSources = @(
+    (Join-Path $root 'src\src\neverdead_diagnostics.cpp'),
+    (Join-Path $root 'refs\core\rexglue-sdk\src\kernel\xboxkrnl\xboxkrnl_io.cpp')
+)
 $outputDir = Join-Path $PSScriptRoot 'n13-benchmarks\n15-stability-final'
 $profilePath = Join-Path $outputDir 'n13_warm_rov_stability_profile.json'
 $reopenReportPath = Join-Path $PSScriptRoot 'n12-validation\n15_save_reopen_report.json'
 $pwsh = Join-Path $PSHOME 'pwsh.exe'
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+
+$exeFile = Get-Item -LiteralPath $exe -ErrorAction SilentlyContinue
+$newestEvidenceSource = $runtimeEvidenceSources |
+    ForEach-Object { Get-Item -LiteralPath $_ } |
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 1
+if (-not $exeFile -or $exeFile.LastWriteTimeUtc -lt $newestEvidenceSource.LastWriteTimeUtc) {
+    throw 'NeverDead executable is missing or older than N15 evidence instrumentation; build it first.'
+}
 
 $runStartedUtc = [DateTime]::UtcNow
 $profilerArguments = @(
@@ -27,6 +42,7 @@ $profilerArguments = @(
     '--stability',
     '--wait-for-idle', $WaitForIdleSeconds,
     '--game-data', $GameDataRoot,
+    '--exe', $exe,
     '--output-dir', $outputDir
 )
 & python @profilerArguments
