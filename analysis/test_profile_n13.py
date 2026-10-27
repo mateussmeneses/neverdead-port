@@ -197,14 +197,14 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('Where-Object LastWriteTimeUtc -ge $captureStartedUtc', harness)
         self.assertIn('Local\\NeverDeadGameplayProfiler', harness)
 
-    def test_save_reopen_runner_retries_only_user_activity(self):
+    def test_save_reopen_runner_uses_soak_user_data_root(self):
         runner = (Path(profile.__file__).parent / 'test_n15_save_reopen.ps1').read_text()
         self.assertIn('$LASTEXITCODE -eq 75', runner)
         self.assertIn('$LASTEXITCODE -ne 0', runner)
-        self.assertIn('$first.SavePersistence.FinalHash -eq $second.SavePersistence.InitialHash',
-                      runner)
-        self.assertIn('$first.SavePersistence.InitialHash -ne $first.SavePersistence.FinalHash',
-                      runner)
+        self.assertIn('$soak.save_persistence.user_data_root', runner)
+        self.assertIn('-UserDataRoot $userDir', runner)
+        self.assertIn('$expectedSaveHash -eq $reopen.SavePersistence.InitialHash', runner)
+        self.assertIn('$soak.stability_gate.checks.checkpoint_state_persisted', runner)
         self.assertIn('ContinueVerified = $false', runner)
         self.assertNotIn('continue gate PASS', runner)
 

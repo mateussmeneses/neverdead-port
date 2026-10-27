@@ -165,10 +165,10 @@ from a soak that records checkpoint writes and verify resumed gameplay from
 that state. New soak profiles record that root plus the size, modification time
 and SHA-256 of every `.sav` and `.header` file before and after gameplay, giving
 the reopen cycle an exact state manifest to compare.
-The legacy two-cycle runner now reports only persistence/reopen: it requires the
-first save content hash to change, confirms that exact hash is present at the
-second launch, and explicitly leaves `ContinueVerified` false until resumed
-gameplay has direct evidence.
+The reopen runner now consumes a passed soak profile, reuses its exact user-data
+root, requires its persisted-checkpoint gate, and confirms the final `ND.sav`
+hash before testing enumeration. It reports only persistence/reopen and leaves
+`ContinueVerified` false until resumed gameplay has direct evidence.
 
 ## 4. Remaining acceptance checks
 

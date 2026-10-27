@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$GameDataRoot = 'C:\projetos\NeverDeadxex',
+    [Parameter(Mandatory)]
+    [string]$SoakProfilePath,
     [int]$WaitForIdleSeconds = 300
 )
 
@@ -11,60 +13,61 @@ $harness = Join-Path $PSScriptRoot 'test_n12_gameplay_save_audio.ps1'
 $outputDir = Join-Path $PSScriptRoot 'n12-validation'
 $reportPath = Join-Path $outputDir 'n12_validation_report.json'
 $pwsh = Join-Path $PSHOME 'pwsh.exe'
-$reports = @()
+$soak = Get-Content -LiteralPath (Resolve-Path -LiteralPath $SoakProfilePath) -Raw |
+    ConvertFrom-Json
+$userDir = [string]$soak.save_persistence.user_data_root
+if (-not $userDir -or -not (Test-Path -LiteralPath $userDir -PathType Container)) {
+    throw "Soak profile user-data root is missing: '$userDir'."
+}
+$expectedSave = @($soak.save_persistence.final_files.PSObject.Properties |
+    Where-Object Name -Match '(^|[\\/])ND\.sav$')
+if ($expectedSave.Count -ne 1 -or -not $expectedSave[0].Value.sha256) {
+    throw 'Soak profile must contain exactly one final ND.sav hash.'
+}
+$expectedSaveHash = [string]$expectedSave[0].Value.sha256
 
-for ($cycle = 1; $cycle -le 2; $cycle++) {
-    while ($true) {
-        & $pwsh -NoProfile -File $harness -GameDataRoot $GameDataRoot `
-            -WaitForIdleSeconds $WaitForIdleSeconds
-        if ($LASTEXITCODE -eq 75) {
-            Write-Host "Cycle $cycle interrupted by laptop activity; re-arming..."
-            continue
-        }
-        if ($LASTEXITCODE -ne 0) {
-            throw "N12 cycle $cycle failed with exit code $LASTEXITCODE."
-        }
-        break
+while ($true) {
+    & $pwsh -NoProfile -File $harness -GameDataRoot $GameDataRoot `
+        -UserDataRoot $userDir -WaitForIdleSeconds $WaitForIdleSeconds
+    if ($LASTEXITCODE -eq 75) {
+        Write-Host 'Reopen interrupted by laptop activity; re-arming...'
+        continue
     }
-
-    $cycleReportPath = Join-Path $outputDir ("n15_save_cycle_{0:D2}_report.json" -f $cycle)
-    Copy-Item -LiteralPath $reportPath -Destination $cycleReportPath -Force
-    $reports += Get-Content -LiteralPath $cycleReportPath -Raw | ConvertFrom-Json
+    if ($LASTEXITCODE -ne 0) {
+        throw "N12 reopen failed with exit code $LASTEXITCODE."
+    }
+    break
 }
 
-$first = $reports[0]
-$second = $reports[1]
-$firstSaveContentChanged = (
-    $first.SavePersistence.InitialHash -and
-    $first.SavePersistence.FinalHash -and
-    $first.SavePersistence.InitialHash -ne $first.SavePersistence.FinalHash
-)
+$reopenReportPath = Join-Path $outputDir 'n15_save_reopen_cycle_report.json'
+Copy-Item -LiteralPath $reportPath -Destination $reopenReportPath -Force
+$reopen = Get-Content -LiteralPath $reopenReportPath -Raw | ConvertFrom-Json
 $persistedSaveReopened = (
-    $first.SavePersistence.FinalHash -and
-    $first.SavePersistence.FinalHash -eq $second.SavePersistence.InitialHash
+    $reopen.SavePersistence.InitialHash -and
+    $expectedSaveHash -eq $reopen.SavePersistence.InitialHash
 )
 $persistencePassed = (
-    $firstSaveContentChanged -and
+    $soak.stability_gate.passed -and
+    $soak.stability_gate.checks.checkpoint_state_persisted -and
     $persistedSaveReopened -and
-    $second.SavePersistence.ItemsEnumerated -gt 0 -and
-    $second.SavePersistence.DeviceSelectorTriggered -and
-    @($second.Captures).Count -ge 11 -and
-    $second.StabilityAudit.FatalTraps -eq 0 -and
-    $second.StabilityAudit.D3D12Errors -eq 0 -and
-    $second.StabilityAudit.DredFaults -eq 0
+    $reopen.SavePersistence.ItemsEnumerated -gt 0 -and
+    $reopen.SavePersistence.DeviceSelectorTriggered -and
+    @($reopen.Captures).Count -ge 11 -and
+    $reopen.StabilityAudit.FatalTraps -eq 0 -and
+    $reopen.StabilityAudit.D3D12Errors -eq 0 -and
+    $reopen.StabilityAudit.DredFaults -eq 0
 )
 
 $aggregate = [ordered]@{
     PersistencePassed = $persistencePassed
     ContinueVerified = $false
-    FirstCycleSaveContentChanged = $firstSaveContentChanged
+    SoakProfile = (Resolve-Path -LiteralPath $SoakProfilePath).Path
+    UserDataRoot = $userDir
+    ExpectedSaveHash = $expectedSaveHash
     PersistedSaveReopened = $persistedSaveReopened
-    SecondCycleItemsEnumerated = $second.SavePersistence.ItemsEnumerated
-    SecondCycleCaptures = @($second.Captures).Count
-    CycleReports = @(
-        'n15_save_cycle_01_report.json',
-        'n15_save_cycle_02_report.json'
-    )
+    ReopenItemsEnumerated = $reopen.SavePersistence.ItemsEnumerated
+    ReopenCaptures = @($reopen.Captures).Count
+    ReopenReport = 'n15_save_reopen_cycle_report.json'
 }
 $aggregatePath = Join-Path $outputDir 'n15_save_reopen_report.json'
 [IO.File]::WriteAllText(

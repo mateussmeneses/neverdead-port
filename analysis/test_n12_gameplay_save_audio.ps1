@@ -9,6 +9,7 @@
 [CmdletBinding()]
 param(
     [string]$GameDataRoot = 'C:\projetos\NeverDeadxex',
+    [string]$UserDataRoot = '',
     [int]$WaitTitleSeconds = 55,
     [int]$WaitForIdleSeconds = 300
 )
@@ -46,7 +47,11 @@ $resolvedGameData = (Resolve-Path -LiteralPath $GameDataRoot).Path
 New-Item -ItemType Directory -Path $captureDir, $logRoot -Force | Out-Null
 
 $runId = Get-Date -Format 'yyyyMMdd-HHmmss'
-$userDir = Join-Path $buildRoot 'n12-save-test\user'
+$userDir = if ($UserDataRoot) {
+    (Resolve-Path -LiteralPath $UserDataRoot).Path
+} else {
+    Join-Path $buildRoot 'n12-save-test\user'
+}
 $cacheDir = Join-Path $buildRoot "n12-cache-$runId"
 $logPath = Join-Path $logRoot "n12-validation-$runId.log"
 New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
