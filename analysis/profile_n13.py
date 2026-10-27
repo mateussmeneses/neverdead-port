@@ -142,6 +142,8 @@ def linear_slope_per_minute(times, values):
 def evaluate_stability_gate(results, requested_seconds):
     actions = results['stability_actions']
     health = results['log_health']
+    save_persistence = results['save_persistence']
+    final_save_files = save_persistence['final_files']
     checks = {
         'completed_duration': (
             results['measurement_window']['elapsed_seconds'] >= requested_seconds and
@@ -153,6 +155,11 @@ def evaluate_stability_gate(results, requested_seconds):
         'combat': actions['combat'] > 0,
         'checkpoint_saves': (actions['checkpoint_saves'] >= 2
                              if requested_seconds >= 1800 else True),
+        'checkpoint_state_persisted': (
+            any(name.lower().endswith('.sav') for name in final_save_files) and
+            final_save_files != save_persistence['initial_files']
+            if requested_seconds >= 1800 else True
+        ),
         'audio_xma_active': results['ppc_and_system']['total_xma_frames'] > 0,
         'audio_underruns': results['audio']['buffer_underruns'] == 0,
         'fatal_crashes': health['fatal_crashes'] == 0,

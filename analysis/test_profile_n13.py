@@ -43,6 +43,10 @@ class StabilityGateTests(unittest.TestCase):
         results = {
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1800.0},
+            'save_persistence': {
+                'initial_files': {},
+                'final_files': {'ND.sav': {'sha256': 'A'}},
+            },
             'stability_actions': {
                 'combat': 1,
                 'pause_resume': 5,
@@ -67,6 +71,10 @@ class StabilityGateTests(unittest.TestCase):
         results = {
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1200.0, 'rendered_seconds': 1200.0},
+            'save_persistence': {
+                'initial_files': {},
+                'final_files': {'ND.sav': {'sha256': 'A'}},
+            },
             'stability_actions': {
                 'combat': 1,
                 'pause_resume': 5,
@@ -85,6 +93,10 @@ class StabilityGateTests(unittest.TestCase):
         results = {
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1200.0},
+            'save_persistence': {
+                'initial_files': {},
+                'final_files': {'ND.sav': {'sha256': 'A'}},
+            },
             'stability_actions': {
                 'combat': 1,
                 'pause_resume': 5,
@@ -97,6 +109,25 @@ class StabilityGateTests(unittest.TestCase):
         }
         gate = profile.evaluate_stability_gate(results, 1800)
         self.assertFalse(gate['checks']['completed_duration'])
+        self.assertFalse(gate['passed'])
+
+    def test_rejects_checkpoint_events_without_persisted_save_state(self):
+        results = {
+            'frames_captured': 36000,
+            'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1800.0},
+            'save_persistence': {'initial_files': {}, 'final_files': {}},
+            'stability_actions': {
+                'combat': 1,
+                'pause_resume': 5,
+                'focus_cycles': 3,
+                'checkpoint_saves': 2,
+            },
+            'ppc_and_system': {'total_xma_frames': 1},
+            'audio': {'buffer_underruns': 0},
+            'log_health': {'fatal_crashes': 0, 'd3d12_errors': 0, 'dred_faults': 0},
+        }
+        gate = profile.evaluate_stability_gate(results, 1800)
+        self.assertFalse(gate['checks']['checkpoint_state_persisted'])
         self.assertFalse(gate['passed'])
 
     def test_observes_save_file_writes_only(self):
