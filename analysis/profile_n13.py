@@ -122,6 +122,7 @@ def evaluate_stability_gate(results, requested_seconds):
     checks = {
         'completed_duration': (
             results['measurement_window']['elapsed_seconds'] >= requested_seconds and
+            results['measurement_window']['rendered_seconds'] >= requested_seconds * 0.95 and
             results['frames_captured'] >= requested_seconds * 20
         ),
         'pause_resume': actions['pause_resume'] >= max(0, (requested_seconds - 1) // 300),
@@ -731,6 +732,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             'gameplay_csv_end_byte': gameplay_csv_end,
             'requested_seconds': gameplay_duration_sec,
             'elapsed_seconds': gameplay_elapsed_seconds,
+            'rendered_seconds': sum(frame_times_ms) / 1000.0,
         },
         'frames_captured': total_frames,
         'frametime_ms': {

@@ -134,7 +134,7 @@ game, waits for another 15-minute Windows idle period and repeats the same run
 without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
-still terminates the game. Fifteen unit tests cover the profiler and controller.
+still terminates the game. Sixteen unit tests cover the profiler and controller.
 Input is sent only to the game window, the game runs below normal priority, and a named
 mutex prevents concurrent profilers. Unattended runs now require a 15-minute
 idle window; the queue is intentionally stopped while the laptop is in active
@@ -146,8 +146,9 @@ faults. Memory evidence includes peak, start/end growth and linear RSS/commit
 slopes in MB/min. The 30-minute run additionally requires at least two
 `.sav`/`.header` write events after gameplay starts, providing direct evidence
 of multiple checkpoint saves. Completion requires both the minimum frame count
-and the full requested monotonic wall-clock duration, preventing an early exit
-at high FPS from passing the soak gate.
+and the full requested monotonic wall-clock duration, with accumulated frame
+times covering at least 95% of that window. This prevents an early exit at high
+FPS or a frozen tail from passing the soak gate.
 
 ## 4. Remaining acceptance checks
 
