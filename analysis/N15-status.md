@@ -105,7 +105,7 @@ The first laptop-safe attempt reached gameplay and wrote 9,188 frame samples,
 then the user-activity watchdog stopped it before the first five-minute pause;
 the runtime log contains no crash, missing-function or DRED signature. The
 controller now treats this as a recoverable interruption: it terminates the
-game, waits for another five-minute Windows idle period and repeats the same run
+game, waits for another 15-minute Windows idle period and repeats the same run
 without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
@@ -134,7 +134,8 @@ of multiple checkpoint saves.
 - [ ] Build and inspect the release ZIP after all runtime gates pass.
 
 Release inspection is now automated by `validate_release_zip.ps1`. It rejects
-extra, missing or duplicate files and unsafe traversal paths, and requires the
-packaged config to retain ROV plus safe fetch-constant validation. The existing v0.2.1 archive
-passes structurally, but a fresh package is still required after the runtime
+extra, missing, duplicate or empty files and unsafe traversal paths, verifies
+the PE signature of every packaged executable and DLL, and requires the config
+to retain ROV plus safe fetch-constant validation. The existing v0.2.1 archive
+passes these checks, but a fresh package is still required after the runtime
 gates and current commits.

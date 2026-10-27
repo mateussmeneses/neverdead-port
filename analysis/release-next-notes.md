@@ -19,8 +19,9 @@ date remain intentionally unset until the N15 runtime gates pass.
 - Save validation can close, reopen and continue from the same persistent user
   data root.
 - Missing NeverDead PPC thunk boundaries found by soak testing are registered.
-- Release ZIP inspection now rejects unexpected files and unsafe paths and
-  verifies that the packaged config retains ROV and safe fetch constants.
+- Release ZIP inspection now rejects unexpected, empty and unsafe files,
+  verifies Windows binary signatures, and requires ROV plus safe fetch
+  constants in the packaged config.
 
 ## Known limitation
 
