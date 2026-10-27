@@ -134,7 +134,8 @@ game, waits for another 15-minute Windows idle period and repeats the same run
 without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
-still terminates the game. Nineteen unit tests cover the profiler and controller.
+still terminates the game. The soak now uses the validated Right Arrow camera
+yaw and holds aim while firing. Nineteen unit tests cover the profiler and controller.
 Input is sent only to the game window, the game runs below normal priority, and a named
 mutex prevents concurrent profilers. Unattended runs now require a 15-minute
 idle window; the queue is intentionally stopped while the laptop is in active

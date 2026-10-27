@@ -303,7 +303,6 @@ VK_RIGHT = 0x27
 VK_W = 0x57
 VK_A = 0x41
 VK_S = 0x53
-VK_D = 0x44
 VK_E = 0x45
 VK_Q = 0x51
 VK_X = 0x58
@@ -322,29 +321,34 @@ def find_window_for_pid(pid):
     user32.EnumWindows(WNDENUMPROC(enum_cb), 0)
     return hwnds[0] if hwnds else None
 
-def tap_key(hwnd, vk):
+def post_key(hwnd, vk, down):
     if not hwnd:
         raise RuntimeError("Cannot send targeted input without a game window")
     scan = user32.MapVirtualKeyW(vk, 0)
     extended = 1 if (37 <= vk <= 40) else 0
-    l_down = 1 | (scan << 16) | (extended << 24)
-    l_up = 1 | (scan << 16) | (extended << 24) | (1 << 30) | (1 << 31)
-    user32.PostMessageW(hwnd, WM_KEYDOWN, vk, l_down)
+    lparam = 1 | (scan << 16) | (extended << 24)
+    if not down:
+        lparam |= (1 << 30) | (1 << 31)
+    user32.PostMessageW(hwnd, WM_KEYDOWN if down else WM_KEYUP, vk, lparam)
+
+def tap_key(hwnd, vk):
+    post_key(hwnd, vk, True)
     time.sleep(0.08)
-    user32.PostMessageW(hwnd, WM_KEYUP, vk, l_up)
+    post_key(hwnd, vk, False)
     time.sleep(0.05)
 
 def hold_key(hwnd, vk, duration_sec):
-    if not hwnd:
-        raise RuntimeError("Cannot send targeted input without a game window")
-    scan = user32.MapVirtualKeyW(vk, 0)
-    extended = 1 if (37 <= vk <= 40) else 0
-    l_down = 1 | (scan << 16) | (extended << 24)
-    l_up = 1 | (scan << 16) | (extended << 24) | (1 << 30) | (1 << 31)
-    user32.PostMessageW(hwnd, WM_KEYDOWN, vk, l_down)
+    post_key(hwnd, vk, True)
     time.sleep(duration_sec)
-    user32.PostMessageW(hwnd, WM_KEYUP, vk, l_up)
+    post_key(hwnd, vk, False)
     time.sleep(0.05)
+
+def tap_key_while_held(hwnd, held_vk, tapped_vk):
+    post_key(hwnd, held_vk, True)
+    try:
+        tap_key(hwnd, tapped_vk)
+    finally:
+        post_key(hwnd, held_vk, False)
 
 def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_root, cache_dir,
                            user_dir, output_dir, artifact_label=None, render_target_path="rov",
@@ -582,7 +586,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         if mod_idx == 0:
             hold_key(hwnd, VK_W, 1.2)  # Walk forward into environment
         elif mod_idx == 1:
-            hold_key(hwnd, VK_D, 0.6)  # Turn camera / yaw
+            hold_key(hwnd, VK_RIGHT, 0.6)  # Turn camera / yaw
         elif mod_idx == 2:
             tap_key(hwnd, VK_SPACE)    # Dodge roll / jump (triggers physics)
             time.sleep(0.5)
@@ -591,10 +595,10 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         elif mod_idx == 4:
             hold_key(hwnd, VK_S, 0.8)  # Step back
         elif mod_idx == 5:
-            tap_key(hwnd, VK_E)        # Right trigger / primary combat
+            tap_key_while_held(hwnd, VK_Q, VK_E)  # Aim + primary fire
             stability_actions['combat'] += 1
         elif mod_idx == 6:
-            tap_key(hwnd, VK_Q)        # Left trigger / alternate combat
+            tap_key(hwnd, VK_X)        # Alternate attack / interaction
             stability_actions['combat'] += 1
 
         cycle_counter += 1

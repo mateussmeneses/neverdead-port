@@ -232,12 +232,17 @@ class TargetedInputTests(unittest.TestCase):
         with patch.object(profile, 'user32', fake), patch.object(profile.time, 'sleep'):
             profile.tap_key(123, profile.VK_W)
             profile.hold_key(123, profile.VK_A, 1.0)
+            profile.tap_key_while_held(123, profile.VK_Q, profile.VK_E)
 
         self.assertEqual([message[:3] for message in fake.messages], [
             (123, profile.WM_KEYDOWN, profile.VK_W),
             (123, profile.WM_KEYUP, profile.VK_W),
             (123, profile.WM_KEYDOWN, profile.VK_A),
             (123, profile.WM_KEYUP, profile.VK_A),
+            (123, profile.WM_KEYDOWN, profile.VK_Q),
+            (123, profile.WM_KEYDOWN, profile.VK_E),
+            (123, profile.WM_KEYUP, profile.VK_E),
+            (123, profile.WM_KEYUP, profile.VK_Q),
         ])
 
     def test_input_requires_game_window(self):
