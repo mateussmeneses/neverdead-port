@@ -146,7 +146,7 @@ without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
 still terminates the game. The soak now uses the validated Right Arrow camera
-yaw and holds aim while firing. Twenty-three unit tests cover the profiler and controller.
+yaw and holds aim while firing. Twenty-four unit tests cover the profiler and controller.
 Input is sent only to the game window, the game runs below normal priority, and a named
 mutex prevents concurrent profilers. Unattended runs now require a 15-minute
 idle window; the queue is intentionally stopped while the laptop is in active
@@ -206,6 +206,10 @@ The reopen harness now arms its activity watchdog only after window creation;
 later input changes are ignored only while the game owns the foreground, so
 startup input cannot abort the run and activity in another application still
 terminates it.
+`build_n15_when_idle.ps1` prepares the required binary without taking over an
+active laptop: it waits for 15 minutes of idle time, builds one job at
+below-normal priority, terminates the full CMake/Ninja process tree on input,
+re-arms, and accepts the result only when both N15 markers are embedded.
 
 ## 4. Remaining acceptance checks
 

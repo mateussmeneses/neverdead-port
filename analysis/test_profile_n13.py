@@ -281,6 +281,18 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('$reopen.ContinueVerified', runner)
         self.assertIn('if (-not $passed)', runner)
 
+    def test_idle_build_stops_on_laptop_activity(self):
+        runner = (Path(profile.__file__).parent / 'build_n15_when_idle.ps1').read_text()
+        self.assertIn('[int]$WaitForIdleSeconds = 900', runner)
+        self.assertIn("$build.PriorityClass = 'BelowNormal'", runner)
+        self.assertIn('& taskkill.exe /PID $build.Id /T /F', runner)
+        self.assertIn('if ($interrupted) { continue }', runner)
+        self.assertIn('if ($build.ExitCode -ne 0)', runner)
+        self.assertIn("'--parallel', '1'", runner)
+        self.assertIn('Build stopped because laptop activity resumed; re-arming...', runner)
+        self.assertIn('N15 gameplay pause thunk 0x8253B640 reached', runner)
+        self.assertIn('Read save file:', runner)
+
     def test_pause_diagnostic_preserves_original_thunk(self):
         diagnostic = (Path(profile.__file__).parents[1] / 'src' / 'src' /
                       'neverdead_diagnostics.cpp').read_text()
