@@ -111,6 +111,12 @@ public static class N12InputBridge {
     [DllImport("user32.dll")]
     public static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
     [DllImport("kernel32.dll")]
     public static extern void Sleep(uint milliseconds);
 
@@ -123,6 +129,12 @@ public static class N12InputBridge {
 
     public static uint GetIdleMilliseconds() {
         return unchecked(GetTickCount() - GetLastInputTick());
+    }
+
+    public static bool IsForegroundProcess(int processId) {
+        uint foregroundProcessId;
+        GetWindowThreadProcessId(GetForegroundWindow(), out foregroundProcessId);
+        return foregroundProcessId == (uint)processId;
     }
 
     public static bool TapKey(IntPtr hWnd, ushort vk) {
@@ -166,6 +178,7 @@ if ($WaitForIdleSeconds -gt 0) {
     }
 }
 $initialInputTick = [N12InputBridge]::GetLastInputTick()
+$watchdogArmed = $false
 
 # Clean any stale trigger file
 $triggerFile = Join-Path $buildRoot 'capture_trigger.txt'
@@ -195,9 +208,14 @@ function Wait-N12Idle {
     param([int]$Milliseconds)
     $deadline = [DateTime]::UtcNow.AddMilliseconds($Milliseconds)
     while ([DateTime]::UtcNow -lt $deadline) {
-        if ([N12InputBridge]::GetLastInputTick() -ne $initialInputTick) {
-            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-            throw 'N12 validation stopped because laptop activity resumed.'
+        $currentInputTick = [N12InputBridge]::GetLastInputTick()
+        if ($script:watchdogArmed -and $currentInputTick -ne $script:initialInputTick) {
+            if ([N12InputBridge]::IsForegroundProcess($proc.Id)) {
+                $script:initialInputTick = $currentInputTick
+            } else {
+                Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+                throw 'N12 validation stopped because laptop activity resumed.'
+            }
         }
         $remaining = [int]($deadline - [DateTime]::UtcNow).TotalMilliseconds
         Start-Sleep -Milliseconds ([Math]::Max(1, [Math]::Min(200, $remaining)))
@@ -218,6 +236,8 @@ while ([DateTime]::UtcNow -lt $deadline -and -not $proc.HasExited) {
 
 if ($windowHandle -ne [IntPtr]::Zero) {
     Write-Host "Window Handle Acquired: $windowHandle (PID: $($proc.Id))"
+    $script:initialInputTick = [N12InputBridge]::GetLastInputTick()
+    $script:watchdogArmed = $true
 }
 
 $capturedFrames = @()

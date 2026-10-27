@@ -231,6 +231,8 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('WaitForIdleSeconds = 300', harness)
         self.assertIn('laptop activity resumed', harness)
         self.assertIn('exit 75', harness)
+        self.assertIn('$script:watchdogArmed = $true', harness)
+        self.assertIn('[N12InputBridge]::IsForegroundProcess($proc.Id)', harness)
         self.assertIn('Where-Object LastWriteTimeUtc -ge $captureStartedUtc', harness)
         self.assertIn('Local\\NeverDeadGameplayProfiler', harness)
         self.assertIn("$saveReadMarker = 'Read save file:'", harness)

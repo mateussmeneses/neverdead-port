@@ -198,6 +198,10 @@ reads save data after campaign selection and reaches this gameplay pause path;
 the harness exercises a second pause/resume cycle to cover the alternate thunk.
 The unattended controller rejects an executable older than either evidence
 source, preventing a long soak from running without the required markers.
+The reopen harness now arms its activity watchdog only after window creation;
+later input changes are ignored only while the game owns the foreground, so
+startup input cannot abort the run and activity in another application still
+terminates it.
 
 ## 4. Remaining acceptance checks
 
