@@ -1,7 +1,7 @@
 # N15 — ROV Performance, RTV Parity and Long-Run Stability
 
 **Status:** IN PROGRESS  
-**Updated:** 2026-10-26
+**Updated:** 2026-10-27
 
 ## 1. ROV gameplay regression gate
 
@@ -88,27 +88,40 @@ factors are `SRC_ALPHA`, and 15 color-destination factors are `INV_SRC_ALPHA`.
 The RTV full-range workaround divides all fixed16 shader outputs, including
 alpha, by 32 before D3D12 fixed-function blending. Therefore those passes can
 receive roughly 1/32 of the intended source contribution. This is an
-evidence-backed explanation for the dark RTV output, but the limited-range A/B
-must confirm it before changing storage or blend semantics.
+evidence-backed hazard, but the limited-range A/B did not confirm that it alone
+explains the dark output.
 
 The affected combinations are not one isolated state: 14 are conventional
 `SRC_ALPHA/INV_SRC_ALPHA` blends and 14 are additive `SRC_ALPHA/ONE` blends.
 Xenia [documents full-range RTV](https://github.com/xenia-canary/xenia-canary/wiki/Options)
 as trading away blending correctness, and its current implementation has no
-compensation to port. If the limited-range A/B
-restores lighting, limited range still must not become the final path because
-it clips the fixed16 HDR channels to -1..1. The corrective branch should keep
-RGB full-range while preserving semantic alpha for fixed-function blending and
-adjusting alpha ownership transfer/resolve consistently.
+compensation to port.
 
 `run_n15_rtv_fixed16_ab.ps1` now makes that isolation reproducible. It runs the
 full-range and limited-range variants against the same ROV reference, requires
 15 minutes of Windows input idle before each run, rejects stale profiles and
-writes `n15_rtv_fixed16_ab.json`. It is prepared but intentionally not armed
-while the laptop is in active use.
-The A/B also records the effective fixed16 policy and requires limited-range to
-pass the gameplay, performance and visual gates while improving both luminance
-and RGB-channel deltas.
+writes `n15_rtv_fixed16_ab.json`. The completed A/B rejected both variants:
+
+| Fixed16 policy | Frames | 1% low | Max frame | >50 ms | GPU P95 | Image result |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Full range | 919 | 27 FPS | 167.14 ms | 2 | 18.49 ms | 1.47 average luminance, 1.04% non-black, 97.59% below ROV |
+| Limited range | 925 | 27 FPS | 36.80 ms | 0 | 14.46 ms | 316.03% luminance delta, clipped almost entirely white |
+
+The limited-range run passed the gameplay and performance gates, but failed the
+visual gate more severely than full range: maximum average-channel delta was
+216.35 and luminance-histogram distance was 0.977. Visual inspection confirms
+that it exposes scene geometry by saturating the HDR data rather than restoring
+lighting. Whole-target limited range is therefore rejected and must not become
+the default. The structured result is in
+[`n15_rtv_fixed16_ab.json`](n13-benchmarks/n15_rtv_fixed16_ab.json).
+
+The next RTV experiment must be component-aware: keep RGB in the full -32..32
+mapping while preserving alpha semantics for fixed-function blending. Static
+inspection shows this cannot be a one-line output swizzle. The same alpha
+representation crosses shader output, host target storage, clear/load, dump and
+resolve ownership transfers; changing only the pixel-shader write would corrupt
+later alpha reads. The experiment will remain opt-in and ROV will remain the
+default until all of those transitions are coherent and the image gate passes.
 The image gate now also compares an eight-bin luminance distribution. Historical
 ROV repeats differ by 0.119–0.126, while the dark RTV captures differ by
 0.608–0.609, so the acceptance limit is conservatively set to 0.20.

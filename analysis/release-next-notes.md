@@ -27,7 +27,10 @@ date remain intentionally unset until the N15 runtime gates pass.
 ## Known limitation
 
 RTV gameplay still fails the automatic image-parity gate. ROV must remain the
-default until fixed16 ownership/resolve testing produces a capture within the
+default. The fixed16 range A/B proved that full range is nearly black while
+limited range clips the HDR scene almost entirely white, despite recovering
+stable frame pacing. A component-aware RGB/alpha ownership experiment is still
+required before RTV can be reconsidered; it must produce a capture within the
 10% luminance, 12-point channel-delta and 0.20 luminance-histogram limits.
 
 ## Required before publishing
