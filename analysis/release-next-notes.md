@@ -15,9 +15,10 @@ date remain intentionally unset until the N15 runtime gates pass.
   below-normal runtime priority and a Windows-idle watchdog.
 - The stability gate checks duration, combat, pause/resume, focus cycles,
   checkpoint writes, memory growth, XMA activity, audio underruns, fatal errors,
-  D3D12 failures and DRED reports.
-- Save validation can close, reopen and continue from the same persistent user
-  data root.
+  D3D12 failures, DRED reports and shader-cache growth.
+- Save validation reopens the exact user-data root and `ND.sav` hash produced by
+  the accepted soak. Continue requires a successful save-data read followed by
+  the evidence-backed gameplay pause path in the same session.
 - Missing NeverDead PPC thunk boundaries found by soak testing are registered.
 - Release ZIP inspection now rejects unexpected, empty and unsafe files,
   verifies Windows binary signatures, and requires ROV plus safe fetch
@@ -27,7 +28,7 @@ date remain intentionally unset until the N15 runtime gates pass.
 
 RTV gameplay still fails the automatic image-parity gate. ROV must remain the
 default until fixed16 ownership/resolve testing produces a capture within the
-10% luminance and 12-point channel-delta limits.
+10% luminance, 12-point channel-delta and 0.20 luminance-histogram limits.
 
 ## Required before publishing
 
