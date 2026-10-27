@@ -86,6 +86,16 @@ receive roughly 1/32 of the intended source contribution. This is an
 evidence-backed explanation for the dark RTV output, but the limited-range A/B
 must confirm it before changing storage or blend semantics.
 
+The affected combinations are not one isolated state: 14 are conventional
+`SRC_ALPHA/INV_SRC_ALPHA` blends and 14 are additive `SRC_ALPHA/ONE` blends.
+Xenia [documents full-range RTV](https://github.com/xenia-canary/xenia-canary/wiki/Options)
+as trading away blending correctness, and its current implementation has no
+compensation to port. If the limited-range A/B
+restores lighting, limited range still must not become the final path because
+it clips the fixed16 HDR channels to -1..1. The corrective branch should keep
+RGB full-range while preserving semantic alpha for fixed-function blending and
+adjusting alpha ownership transfer/resolve consistently.
+
 Canary commit `534aeb6` (2026-10-23) quantizes PWL gamma after MSAA averaging.
 NeverDead does create format 1 (`k_8_8_8_8_GAMMA`) pipelines, so the change is
 relevant to general gamma fidelity. It is not a candidate for the path-specific
