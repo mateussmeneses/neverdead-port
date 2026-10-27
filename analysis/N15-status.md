@@ -150,6 +150,14 @@ and the full requested monotonic wall-clock duration, with accumulated frame
 times covering at least 95% of that window. This prevents an early exit at high
 FPS or a frozen tail from passing the soak gate.
 
+The older N12 report proves that an existing `ND.sav` is enumerated and remains
+byte-identical after relaunch, but it does not close the N15 save gate: its
+captured route enters the difficulty screen, the save hash is unchanged during
+the run, and there is no evidence that a `Continue` entry loaded a recorded
+checkpoint. The N15 reopen cycle must therefore reuse the exact user-data root
+from a soak that records checkpoint writes and verify resumed gameplay from
+that state.
+
 ## 4. Remaining acceptance checks
 
 - [x] Three repeatable ROV gameplay benchmarks.
