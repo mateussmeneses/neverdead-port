@@ -775,6 +775,10 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         'scenario': scenario,
         'run': artifact_label,
         'render_target_path': render_target_path,
+        'render_options': {
+            'gamma_render_target_as_unorm16': gamma_unorm16,
+            'snorm16_render_target_full_range': snorm16_full_range,
+        },
         'save_persistence': {
             'user_data_root': run_user_dir,
             'initial_files': save_files_initial,

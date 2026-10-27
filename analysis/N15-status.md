@@ -101,6 +101,9 @@ full-range and limited-range variants against the same ROV reference, requires
 15 minutes of Windows input idle before each run, rejects stale profiles and
 writes `n15_rtv_fixed16_ab.json`. It is prepared but intentionally not armed
 while the laptop is in active use.
+The A/B also records the effective fixed16 policy and requires limited-range to
+pass the gameplay, performance and visual gates while improving both luminance
+and RGB-channel deltas.
 
 Canary commit `534aeb6` (2026-10-23) quantizes PWL gamma after MSAA averaging.
 NeverDead does create format 1 (`k_8_8_8_8_GAMMA`) pipelines, so the change is

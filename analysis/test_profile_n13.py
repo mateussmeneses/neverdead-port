@@ -216,6 +216,10 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn("$arguments += '--disable-snorm16-full-range'", runner)
         self.assertIn("'--wait-for-idle', $WaitForIdleSeconds", runner)
         self.assertIn('$results[1].GameplayGatePassed', runner)
+        self.assertIn('$results[1].PerformanceGatePassed', runner)
+        self.assertIn('$results[1].MaximumAverageChannelDelta -lt', runner)
+        self.assertIn('$results[0].Snorm16FullRange', runner)
+        self.assertIn('-not $results[1].Snorm16FullRange', runner)
         self.assertIn('HypothesisSupported = $hypothesisSupported', runner)
 
     def test_input_is_sent_only_to_game_window(self):
