@@ -34,13 +34,18 @@ for ($cycle = 1; $cycle -le 2; $cycle++) {
 
 $first = $reports[0]
 $second = $reports[1]
-$sameSaveReopened = (
+$firstSaveContentChanged = (
+    $first.SavePersistence.InitialHash -and
+    $first.SavePersistence.FinalHash -and
+    $first.SavePersistence.InitialHash -ne $first.SavePersistence.FinalHash
+)
+$persistedSaveReopened = (
     $first.SavePersistence.FinalHash -and
     $first.SavePersistence.FinalHash -eq $second.SavePersistence.InitialHash
 )
-$passed = (
-    $first.SavePersistence.WasWritten -and
-    $sameSaveReopened -and
+$persistencePassed = (
+    $firstSaveContentChanged -and
+    $persistedSaveReopened -and
     $second.SavePersistence.ItemsEnumerated -gt 0 -and
     $second.SavePersistence.DeviceSelectorTriggered -and
     @($second.Captures).Count -ge 11 -and
@@ -50,9 +55,10 @@ $passed = (
 )
 
 $aggregate = [ordered]@{
-    Passed = $passed
-    SameSaveReopened = $sameSaveReopened
-    FirstCycleSaveWritten = $first.SavePersistence.WasWritten
+    PersistencePassed = $persistencePassed
+    ContinueVerified = $false
+    FirstCycleSaveContentChanged = $firstSaveContentChanged
+    PersistedSaveReopened = $persistedSaveReopened
     SecondCycleItemsEnumerated = $second.SavePersistence.ItemsEnumerated
     SecondCycleCaptures = @($second.Captures).Count
     CycleReports = @(
@@ -67,7 +73,8 @@ $aggregatePath = Join-Path $outputDir 'n15_save_reopen_report.json'
     [Text.Encoding]::UTF8
 )
 
-if (-not $passed) {
-    throw "Save -> close -> reopen -> continue gate failed. See '$aggregatePath'."
+if (-not $persistencePassed) {
+    throw "Save persistence -> close -> reopen gate failed. See '$aggregatePath'."
 }
-Write-Host "Save -> close -> reopen -> continue gate PASS: $aggregatePath"
+Write-Host "Save persistence -> close -> reopen gate PASS: $aggregatePath"
+Write-Warning 'Continue remains unverified until the resumed gameplay route is validated.'

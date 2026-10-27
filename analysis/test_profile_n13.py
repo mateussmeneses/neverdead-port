@@ -203,6 +203,10 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('$LASTEXITCODE -ne 0', runner)
         self.assertIn('$first.SavePersistence.FinalHash -eq $second.SavePersistence.InitialHash',
                       runner)
+        self.assertIn('$first.SavePersistence.InitialHash -ne $first.SavePersistence.FinalHash',
+                      runner)
+        self.assertIn('ContinueVerified = $false', runner)
+        self.assertNotIn('continue gate PASS', runner)
 
     def test_rtv_fixed16_ab_runner_is_idle_guarded(self):
         runner = (Path(profile.__file__).parent / 'run_n15_rtv_fixed16_ab.ps1').read_text()
