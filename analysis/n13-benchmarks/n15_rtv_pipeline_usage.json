@@ -22,5 +22,29 @@
     "alpha_min_or_max": 0,
     "constant_color_or_alpha_factor": 0
   },
-  "conclusion": "The cached NeverDead RTV workload cannot exercise the upstream MIN/MAX source-factor or constant-alpha fixes. Fixed16 render targets are the dominant format and remain the relevant isolation target."
+  "fixed16_blend_usage": {
+    "render_targets": 100,
+    "render_targets_using_alpha_dependent_factors": 30,
+    "color_source": {
+      "one": 71,
+      "source_alpha": 28,
+      "destination_color": 1
+    },
+    "color_destination": {
+      "zero": 69,
+      "one": 16,
+      "inverse_source_alpha": 15
+    },
+    "alpha_source": {
+      "one": 71,
+      "source_alpha": 28,
+      "destination_alpha": 1
+    },
+    "alpha_destination": {
+      "zero": 69,
+      "one": 16,
+      "inverse_source_alpha": 15
+    }
+  },
+  "conclusion": "The cached NeverDead RTV workload cannot exercise the upstream MIN/MAX source-factor or constant-alpha fixes. However, 30 of 100 fixed16 targets use alpha-dependent blend factors. The RTV full-range path scales fixed16 RGBA output by 1/32 before fixed-function blending, so source-alpha factors are now the primary explanation to test with the limited-range A/B."
 }

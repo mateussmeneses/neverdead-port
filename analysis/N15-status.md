@@ -77,6 +77,15 @@ the primary suspect. Commit `4cc584f47` maps constant-alpha blending to D3D12
 Options13 and provides a legacy fallback, but the same cache inspection found
 no constant blend-factor use, so it is also outside the failing workload.
 
+The pipeline cache does expose a more direct fixed16 hazard. Of 100 bound
+`k_16_16_16_16` targets, 30 use alpha-dependent blend factors: 28 color-source
+factors are `SRC_ALPHA`, and 15 color-destination factors are `INV_SRC_ALPHA`.
+The RTV full-range workaround divides all fixed16 shader outputs, including
+alpha, by 32 before D3D12 fixed-function blending. Therefore those passes can
+receive roughly 1/32 of the intended source contribution. This is an
+evidence-backed explanation for the dark RTV output, but the limited-range A/B
+must confirm it before changing storage or blend semantics.
+
 Canary commit `534aeb6` (2026-10-23) quantizes PWL gamma after MSAA averaging.
 NeverDead does create format 1 (`k_8_8_8_8_GAMMA`) pipelines, so the change is
 relevant to general gamma fidelity. It is not a candidate for the path-specific
