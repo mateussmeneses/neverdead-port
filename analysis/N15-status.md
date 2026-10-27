@@ -196,6 +196,8 @@ The title now also hooks the evidence-backed `0x8253B640` pause thunk without
 changing its behavior. Continue passes only when the same reopen session both
 reads save data after campaign selection and reaches this gameplay pause path;
 the harness exercises a second pause/resume cycle to cover the alternate thunk.
+The hook source passes Clang 23 `-fsyntax-only` with the exact Release include
+paths, defines and C++23 flags emitted by the current Ninja build.
 The unattended controller rejects an executable older than either evidence
 source, preventing a long soak from running without the required markers.
 It also scans `neverdead.exe` and `rexruntime.dll` for the compiled marker
