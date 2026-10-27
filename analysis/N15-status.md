@@ -188,6 +188,10 @@ hash before testing enumeration. It reports only persistence/reopen and leaves
 waits for 15 minutes of idle time, runs a fresh 30–60 minute ROV soak, rejects a
 stale or failed profile, and passes that exact profile to the reopen runner. Its
 aggregate cannot pass while `ContinueVerified` remains false.
+The runtime now emits a targeted DEBUG marker for successful `.sav` opens. The
+reopen report counts only markers after campaign selection, separating save
+enumeration from actual load activity; this is necessary evidence for Continue,
+but does not replace resumed-gameplay proof.
 
 ## 4. Remaining acceptance checks
 

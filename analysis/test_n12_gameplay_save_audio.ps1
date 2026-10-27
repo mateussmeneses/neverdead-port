@@ -296,6 +296,10 @@ Wait-N12Idle -Milliseconds 1000
 Take-N12Capture -StageName "03-menu-navigation" -Description "Menu selection cursor moved"
 
 # Stage 4: Select Campaign / Continue / New Game
+$saveOpenMarker = 'Opened save file:'
+$saveOpensBeforeCampaign = if (Test-Path -LiteralPath $logPath) {
+    @([regex]::Matches((Get-Content -LiteralPath $logPath -Raw), $saveOpenMarker)).Count
+} else { 0 }
 Write-Host "Tapping UP (Up Arrow) and A (Space) to select Campaign..."
 [void][N12InputBridge]::TapKey($windowHandle, 38) # VK_UP
 Wait-N12Idle -Milliseconds 500
@@ -364,6 +368,10 @@ $saveEnumMatches = [regex]::Matches($logContent, 'XamContentCreateEnumerator: ad
 $itemsFound = if ($saveEnumMatches.Count -gt 0) { $saveEnumMatches[0].Groups[1].Value } else { "0" }
 $deviceSelectorCalls = @([regex]::Matches($logContent, 'XamShowDeviceSelectorUI')).Count
 $saveMounts = @([regex]::Matches($logContent, 'Registered symbolic link: save:')).Count
+$saveOpensAfterCampaign = [Math]::Max(
+    0,
+    @([regex]::Matches($logContent, $saveOpenMarker)).Count - $saveOpensBeforeCampaign
+)
 $finalSaveSize = if (Test-Path -LiteralPath $saveFile) { (Get-Item -LiteralPath $saveFile).Length } else { 0 }
 $finalSaveHash = if (Test-Path -LiteralPath $saveFile) { (Get-FileHash -LiteralPath $saveFile -Algorithm SHA256).Hash } else { "" }
 $finalSaveWriteUtc = if (Test-Path -LiteralPath $saveFile) {
@@ -418,6 +426,7 @@ $report = @{
         WasWritten = ($finalSaveWriteUtc -and $finalSaveWriteUtc -ne $initialSaveWriteUtc)
         ItemsEnumerated = [int]$itemsFound
         SaveMountCount = $saveMounts
+        SaveFileOpensAfterCampaign = $saveOpensAfterCampaign
         DeviceSelectorTriggered = ($deviceSelectorCalls -gt 0)
     }
     AudioAudit = @{
