@@ -13,7 +13,9 @@ $PSNativeCommandUseErrorActionPreference = $false
 $profiler = Join-Path $PSScriptRoot 'profile_n13.py'
 $reopenRunner = Join-Path $PSScriptRoot 'test_n15_save_reopen.ps1'
 $root = Split-Path $PSScriptRoot -Parent
-$exe = Join-Path $root 'build\n2-neverdead\neverdead.exe'
+$buildRoot = Join-Path $root 'build\n2-neverdead'
+$exe = Join-Path $buildRoot 'neverdead.exe'
+$runtimeDll = Join-Path $buildRoot 'rexruntime.dll'
 $runtimeEvidenceSources = @(
     (Join-Path $root 'src\src\neverdead_diagnostics.cpp'),
     (Join-Path $root 'refs\core\rexglue-sdk\src\kernel\xboxkrnl\xboxkrnl_io.cpp')
@@ -24,6 +26,15 @@ $reopenReportPath = Join-Path $PSScriptRoot 'n12-validation\n15_save_reopen_repo
 $pwsh = Join-Path $PSHOME 'pwsh.exe'
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 
+function Test-BinaryMarker {
+    param([string]$Path, [string]$Marker)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return $false
+    }
+    $text = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($Path))
+    return $text.Contains($Marker)
+}
+
 $exeFile = Get-Item -LiteralPath $exe -ErrorAction SilentlyContinue
 $newestEvidenceSource = $runtimeEvidenceSources |
     ForEach-Object { Get-Item -LiteralPath $_ } |
@@ -31,6 +42,10 @@ $newestEvidenceSource = $runtimeEvidenceSources |
     Select-Object -First 1
 if (-not $exeFile -or $exeFile.LastWriteTimeUtc -lt $newestEvidenceSource.LastWriteTimeUtc) {
     throw 'NeverDead executable is missing or older than N15 evidence instrumentation; build it first.'
+}
+if (-not (Test-BinaryMarker $exe 'N15 gameplay pause thunk 0x8253B640 reached') -or
+    -not (Test-BinaryMarker $runtimeDll 'Read save file:')) {
+    throw 'Built runtime does not contain the N15 save/Continue evidence markers; rebuild it first.'
 }
 
 $runStartedUtc = [DateTime]::UtcNow

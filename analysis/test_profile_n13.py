@@ -275,6 +275,8 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn("'--stability'", runner)
         self.assertIn('$profileFile.LastWriteTimeUtc -lt $runStartedUtc', runner)
         self.assertIn('$exeFile.LastWriteTimeUtc -lt $newestEvidenceSource.LastWriteTimeUtc', runner)
+        self.assertIn("Test-BinaryMarker $exe 'N15 gameplay pause thunk 0x8253B640 reached'", runner)
+        self.assertIn("Test-BinaryMarker $runtimeDll 'Read save file:'", runner)
         self.assertIn('-SoakProfilePath $profilePath', runner)
         self.assertIn('$reopen.ContinueVerified', runner)
         self.assertIn('if (-not $passed)', runner)
