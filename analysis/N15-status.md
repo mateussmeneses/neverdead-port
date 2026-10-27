@@ -127,3 +127,9 @@ of multiple checkpoint saves.
 - [ ] Complete a 30-minute stability soak with memory, cache, audio and DRED audit.
 - [ ] Verify save → close → reopen → continue on the same user-data root.
 - [ ] Build and inspect the release ZIP after all runtime gates pass.
+
+Release inspection is now automated by `validate_release_zip.ps1`. It rejects
+extra, missing or duplicate files and unsafe traversal paths, and requires the
+packaged config to retain ROV plus safe fetch-constant validation. The existing v0.2.1 archive
+passes structurally, but a fresh package is still required after the runtime
+gates and current commits.
