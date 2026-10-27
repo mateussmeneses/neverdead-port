@@ -96,6 +96,14 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('$first.SavePersistence.FinalHash -eq $second.SavePersistence.InitialHash',
                       runner)
 
+    def test_rtv_fixed16_ab_runner_is_idle_guarded(self):
+        runner = (Path(profile.__file__).parent / 'run_n15_rtv_fixed16_ab.ps1').read_text()
+        self.assertIn('[int]$WaitForIdleSeconds = 900', runner)
+        self.assertIn("Name = 'full_range'", runner)
+        self.assertIn("Name = 'limited_range'", runner)
+        self.assertIn("$arguments += '--disable-snorm16-full-range'", runner)
+        self.assertIn("'--wait-for-idle', $WaitForIdleSeconds", runner)
+
     def test_input_is_sent_only_to_game_window(self):
         class FakeUser32:
             def __init__(self):

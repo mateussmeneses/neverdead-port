@@ -96,6 +96,12 @@ it clips the fixed16 HDR channels to -1..1. The corrective branch should keep
 RGB full-range while preserving semantic alpha for fixed-function blending and
 adjusting alpha ownership transfer/resolve consistently.
 
+`run_n15_rtv_fixed16_ab.ps1` now makes that isolation reproducible. It runs the
+full-range and limited-range variants against the same ROV reference, requires
+15 minutes of Windows input idle before each run, rejects stale profiles and
+writes `n15_rtv_fixed16_ab.json`. It is prepared but intentionally not armed
+while the laptop is in active use.
+
 Canary commit `534aeb6` (2026-10-23) quantizes PWL gamma after MSAA averaging.
 NeverDead does create format 1 (`k_8_8_8_8_GAMMA`) pipelines, so the change is
 relevant to general gamma fidelity. It is not a candidate for the path-specific
