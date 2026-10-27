@@ -993,6 +993,15 @@ def main():
                         result['frametime_ms']['stutters_gt_50ms'] for result in scenario_results),
                     'maximum_p95_frametime_ms': max(
                         result['frametime_ms']['p95'] for result in scenario_results),
+                    'maximum_swap_cpu_p95_ms': max(
+                        result['timing_breakdown_ms']['swap_cpu']['p95']
+                        for result in scenario_results),
+                    'maximum_gpu_p95_ms': max(
+                        result['timing_breakdown_ms']['gpu']['p95']
+                        for result in scenario_results),
+                    'maximum_present_call_p95_ms': max(
+                        result['timing_breakdown_ms']['present_call']['p95']
+                        for result in scenario_results),
                 },
             }
             aggregate_path = os.path.join(

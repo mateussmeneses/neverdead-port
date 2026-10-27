@@ -16,9 +16,14 @@ end of interactive gameplay, excluding boot, menus and cinematics.
 | 3 | 924 | 27 FPS | 35.21 ms | 36.82 ms | 0 | 14.94 ms | 0.39 ms | 0.16 ms |
 
 The previous warm result of 20 FPS at the 1% low and 11 frames above 50 ms was
-not reproduced after restricting analysis to gameplay frames. The current gate
-requires proven 3D gameplay, at least 26 FPS at the 1% low and no more than one
-frame above 50 ms. Aggregate evidence is in
+caused by measurement scope. Its CSV spans 131.72 seconds and all 11 outliers
+occur before 76.65 seconds, while the scripted route cannot begin gameplay
+measurement until after at least 107 seconds of boot, menus and cutscenes. Seven
+of the outliers occur in the first 14 seconds with only 50–74 draw calls. None
+reappeared in the three gameplay-only runs. The current gate requires proven 3D
+gameplay, at least 26 FPS at the 1% low and no more than one frame above 50 ms.
+Repeat summaries also retain the worst P95 swap-CPU, GPU and Present timings.
+Aggregate evidence is in
 [`n15_warm_rov_repeats.json`](n13-benchmarks/n15_warm_rov_repeats.json).
 
 ## 2. RTV lighting parity
