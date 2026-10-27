@@ -35,6 +35,21 @@ try {
     if (@($actual | Sort-Object -Unique).Count -ne $actual.Count) {
         throw "Release ZIP contains duplicate files"
     }
+    if ($files.Where({ $_.Length -eq 0 }).Count) {
+        throw 'Release ZIP contains an empty file'
+    }
+
+    foreach ($binary in $files.Where({ $_.Name -match '\.(exe|dll)$' })) {
+        $stream = $binary.Open()
+        try {
+            if ($stream.ReadByte() -ne 0x4D -or $stream.ReadByte() -ne 0x5A) {
+                throw "Packaged binary is not a valid PE file: $($binary.FullName)"
+            }
+        }
+        finally {
+            $stream.Dispose()
+        }
+    }
 
     $configEntry = $files | Where-Object Name -eq 'neverdead.toml'
     $reader = [System.IO.StreamReader]::new($configEntry.Open())

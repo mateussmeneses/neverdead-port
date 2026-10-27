@@ -1,6 +1,6 @@
 # NeverDead PC Native Port — Next Alpha Release (Draft)
 
-This draft covers the 31 commits after `v0.2.1-alpha`. The version and release
+This draft covers the changes after `v0.2.1-alpha`. The version and release
 date remain intentionally unset until the N15 runtime gates pass.
 
 ## Verified changes
