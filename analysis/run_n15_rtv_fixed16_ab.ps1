@@ -11,6 +11,9 @@ $PSNativeCommandUseErrorActionPreference = $false
 
 $profiler = Join-Path $PSScriptRoot 'profile_n13.py'
 $outputRoot = Join-Path $PSScriptRoot 'n13-benchmarks'
+if (-not (Test-Path -LiteralPath $ReferenceCapture -PathType Leaf)) {
+    throw "ROV reference capture not found: '$ReferenceCapture'."
+}
 $variants = @(
     [pscustomobject]@{ Name = 'full_range'; DisableFullRange = $false },
     [pscustomobject]@{ Name = 'limited_range'; DisableFullRange = $true }
@@ -44,6 +47,7 @@ foreach ($variant in $variants) {
         Name = $variant.Name
         Profile = $profilePath
         GameplayGatePassed = $profile.gameplay_gate.passed
+        PerformanceGatePassed = $profile.performance_gate.passed
         VisualGatePassed = $profile.visual_gate.passed
         LuminanceDeltaPercent = $profile.visual_gate.luminance_delta_pct
         MaximumAverageChannelDelta = $profile.visual_gate.maximum_average_channel_delta
@@ -51,13 +55,18 @@ foreach ($variant in $variants) {
     }
 }
 
-$passed = (
+$hypothesisSupported = (
     -not $results[0].VisualGatePassed -and
-    $results[1].VisualGatePassed -and
     $results[1].LuminanceDeltaPercent -lt $results[0].LuminanceDeltaPercent
+)
+$passed = (
+    $hypothesisSupported -and
+    $results[1].GameplayGatePassed -and
+    $results[1].VisualGatePassed
 )
 $aggregate = [ordered]@{
     Passed = $passed
+    HypothesisSupported = $hypothesisSupported
     Hypothesis = 'RTV fixed16 full-range alpha scaling causes the dark blend regression.'
     Variants = $results
 }

@@ -103,6 +103,8 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn("Name = 'limited_range'", runner)
         self.assertIn("$arguments += '--disable-snorm16-full-range'", runner)
         self.assertIn("'--wait-for-idle', $WaitForIdleSeconds", runner)
+        self.assertIn('$results[1].GameplayGatePassed', runner)
+        self.assertIn('HypothesisSupported = $hypothesisSupported', runner)
 
     def test_input_is_sent_only_to_game_window(self):
         class FakeUser32:
