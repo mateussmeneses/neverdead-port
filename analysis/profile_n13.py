@@ -120,7 +120,10 @@ def evaluate_stability_gate(results, requested_seconds):
     actions = results['stability_actions']
     health = results['log_health']
     checks = {
-        'completed_duration': results['frames_captured'] >= requested_seconds * 20,
+        'completed_duration': (
+            results['measurement_window']['elapsed_seconds'] >= requested_seconds and
+            results['frames_captured'] >= requested_seconds * 20
+        ),
         'pause_resume': actions['pause_resume'] >= max(0, (requested_seconds - 1) // 300),
         'focus_cycles': actions['focus_cycles'] >= max(0, (requested_seconds - 1) // 450),
         'combat': actions['combat'] > 0,
@@ -478,6 +481,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     time_prev = time.time()
 
     # Active gameplay interaction loop
+    gameplay_monotonic_start = time.monotonic()
     gameplay_start = time.time()
     gameplay_end = gameplay_start + gameplay_duration_sec
     cycle_counter = 0
@@ -560,6 +564,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             save_write_snapshot = current_save_writes
         time.sleep(0.1)
 
+    gameplay_elapsed_seconds = time.monotonic() - gameplay_monotonic_start
     gameplay_csv_end = get_csv_size(perf_csv_path)
 
     print(f"[{scenario.upper()}] Gameplay sampling finished. Terminating process...")
@@ -725,6 +730,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
             'gameplay_csv_start_byte': gameplay_csv_start,
             'gameplay_csv_end_byte': gameplay_csv_end,
             'requested_seconds': gameplay_duration_sec,
+            'elapsed_seconds': gameplay_elapsed_seconds,
         },
         'frames_captured': total_frames,
         'frametime_ms': {

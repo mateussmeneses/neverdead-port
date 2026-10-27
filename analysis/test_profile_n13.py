@@ -42,6 +42,7 @@ class StabilityGateTests(unittest.TestCase):
     def test_accepts_exercised_run_and_rejects_dred_fault(self):
         results = {
             'frames_captured': 36000,
+            'measurement_window': {'elapsed_seconds': 1800.0},
             'stability_actions': {
                 'combat': 1,
                 'pause_resume': 5,
@@ -61,6 +62,24 @@ class StabilityGateTests(unittest.TestCase):
         results['audio']['buffer_underruns'] = 0
         results['stability_actions']['checkpoint_saves'] = 1
         self.assertFalse(profile.evaluate_stability_gate(results, 1800)['passed'])
+
+    def test_rejects_early_exit_even_with_enough_frames(self):
+        results = {
+            'frames_captured': 36000,
+            'measurement_window': {'elapsed_seconds': 1200.0},
+            'stability_actions': {
+                'combat': 1,
+                'pause_resume': 5,
+                'focus_cycles': 3,
+                'checkpoint_saves': 2,
+            },
+            'ppc_and_system': {'total_xma_frames': 1},
+            'audio': {'buffer_underruns': 0},
+            'log_health': {'fatal_crashes': 0, 'd3d12_errors': 0, 'dred_faults': 0},
+        }
+        gate = profile.evaluate_stability_gate(results, 1800)
+        self.assertFalse(gate['checks']['completed_duration'])
+        self.assertFalse(gate['passed'])
 
     def test_observes_save_file_writes_only(self):
         with tempfile.TemporaryDirectory() as directory:
