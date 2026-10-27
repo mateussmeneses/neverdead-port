@@ -237,10 +237,16 @@ def acquire_profiler_mutex():
 
 def stop_process_when_user_returns(proc, detected, initial_input_tick, poll_seconds=0.5):
     while proc.poll() is None:
-        if get_last_input_tick() != initial_input_tick:
-            detected.set()
-            proc.terminate()
-            return
+        current_input_tick = get_last_input_tick()
+        if current_input_tick != initial_input_tick:
+            foreground_pid = wintypes.DWORD()
+            user32.GetWindowThreadProcessId(
+                user32.GetForegroundWindow(), ctypes.byref(foreground_pid))
+            if foreground_pid.value != proc.pid:
+                detected.set()
+                proc.terminate()
+                return
+            initial_input_tick = current_input_tick
         time.sleep(poll_seconds)
 
 # Win32 Window & Input Helpers

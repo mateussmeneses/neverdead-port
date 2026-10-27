@@ -135,6 +135,7 @@ class TargetedInputTests(unittest.TestCase):
     def test_user_activity_stops_background_game(self):
         class FakeProcess:
             def __init__(self):
+                self.pid = 99
                 self.terminated = False
 
             def poll(self):
@@ -145,10 +146,42 @@ class TargetedInputTests(unittest.TestCase):
 
         process = FakeProcess()
         detected = profile.threading.Event()
-        with patch.object(profile, 'get_last_input_tick', return_value=11):
+        fake_user32 = Mock()
+        fake_user32.GetForegroundWindow.return_value = 123
+        with patch.object(profile, 'get_last_input_tick', return_value=11), \
+             patch.object(profile, 'user32', fake_user32):
             profile.stop_process_when_user_returns(process, detected, 10)
         self.assertTrue(process.terminated)
         self.assertTrue(detected.is_set())
+
+    def test_runtime_input_does_not_stop_foreground_game(self):
+        class FakeProcess:
+            pid = 99
+
+            def __init__(self):
+                self.polls = iter([None, 0])
+                self.terminated = False
+
+            def poll(self):
+                return next(self.polls)
+
+            def terminate(self):
+                self.terminated = True
+
+        def set_foreground_pid(_hwnd, pid_pointer):
+            pid_pointer._obj.value = 99
+
+        process = FakeProcess()
+        detected = profile.threading.Event()
+        fake_user32 = Mock()
+        fake_user32.GetForegroundWindow.return_value = 123
+        fake_user32.GetWindowThreadProcessId.side_effect = set_foreground_pid
+        with patch.object(profile, 'get_last_input_tick', return_value=11), \
+             patch.object(profile, 'user32', fake_user32), \
+             patch.object(profile.time, 'sleep'):
+            profile.stop_process_when_user_returns(process, detected, 10)
+        self.assertFalse(process.terminated)
+        self.assertFalse(detected.is_set())
 
     def test_user_activity_rearms_the_same_run_after_idle(self):
         benchmark = Mock(side_effect=[
