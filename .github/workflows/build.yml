@@ -60,6 +60,22 @@ jobs:
         shell: pwsh
         run: python -m unittest analysis.test_profile_n13
 
+      - name: Parse PowerShell Harnesses
+        shell: pwsh
+        run: |
+          $failed = $false
+          Get-ChildItem analysis -Filter '*.ps1' -File | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              $_.FullName, [ref]$tokens, [ref]$errors)
+            if ($errors.Count) {
+              $failed = $true
+              $errors | ForEach-Object { Write-Error $_ }
+            }
+          }
+          if ($failed) { exit 1 }
+
       - name: Verify Live Test Runner Guard (Asset-Dependent Gate)
         shell: pwsh
         run: |
