@@ -134,7 +134,7 @@ game, waits for another 15-minute Windows idle period and repeats the same run
 without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
-still terminates the game. Sixteen unit tests cover the profiler and controller.
+still terminates the game. Seventeen unit tests cover the profiler and controller.
 Input is sent only to the game window, the game runs below normal priority, and a named
 mutex prevents concurrent profilers. Unattended runs now require a 15-minute
 idle window; the queue is intentionally stopped while the laptop is in active
@@ -156,7 +156,9 @@ captured route enters the difficulty screen, the save hash is unchanged during
 the run, and there is no evidence that a `Continue` entry loaded a recorded
 checkpoint. The N15 reopen cycle must therefore reuse the exact user-data root
 from a soak that records checkpoint writes and verify resumed gameplay from
-that state.
+that state. New soak profiles record that root plus the size, modification time
+and SHA-256 of every `.sav` and `.header` file before and after gameplay, giving
+the reopen cycle an exact state manifest to compare.
 
 ## 4. Remaining acceptance checks
 

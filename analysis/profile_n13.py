@@ -19,6 +19,7 @@ import atexit
 import csv
 import ctypes
 from ctypes import wintypes
+import hashlib
 import json
 import os
 import shutil
@@ -90,6 +91,28 @@ def snapshot_save_writes(path):
             try:
                 snapshot[os.path.relpath(file_path, path)] = os.stat(file_path).st_mtime_ns
             except FileNotFoundError:
+                pass
+    return snapshot
+
+def snapshot_save_files(path):
+    snapshot = {}
+    for root, _, files in os.walk(path):
+        for name in files:
+            if not name.lower().endswith(('.sav', '.header')):
+                continue
+            file_path = os.path.join(root, name)
+            try:
+                digest = hashlib.sha256()
+                with open(file_path, 'rb') as save_file:
+                    for chunk in iter(lambda: save_file.read(1024 * 1024), b''):
+                        digest.update(chunk)
+                stat = os.stat(file_path)
+                snapshot[os.path.relpath(file_path, path)] = {
+                    'size_bytes': stat.st_size,
+                    'modified_ns': stat.st_mtime_ns,
+                    'sha256': digest.hexdigest().upper(),
+                }
+            except (FileNotFoundError, PermissionError):
                 pass
     return snapshot
 
@@ -493,6 +516,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         'checkpoint_saves': 0,
     }
     save_write_snapshot = snapshot_save_writes(run_user_dir)
+    save_files_initial = snapshot_save_files(run_user_dir)
     next_pause = gameplay_start + 300.0
     next_focus = gameplay_start + 450.0
 
@@ -584,6 +608,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         raise UserActivityInterrupted(
             f"{artifact_label} stopped because laptop activity resumed")
 
+    save_files_final = snapshot_save_files(run_user_dir)
     final_cache_files, final_cache_bytes = get_dir_size_and_count(cache_dir)
     new_cache_files = final_cache_files - initial_cache_files
     new_cache_bytes = final_cache_bytes - initial_cache_bytes
@@ -727,6 +752,11 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         'scenario': scenario,
         'run': artifact_label,
         'render_target_path': render_target_path,
+        'save_persistence': {
+            'user_data_root': run_user_dir,
+            'initial_files': save_files_initial,
+            'final_files': save_files_final,
+        },
         'measurement_window': {
             'gameplay_csv_start_byte': gameplay_csv_start,
             'gameplay_csv_end_byte': gameplay_csv_end,

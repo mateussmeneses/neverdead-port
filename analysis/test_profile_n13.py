@@ -114,6 +114,21 @@ class StabilityGateTests(unittest.TestCase):
         self.assertNotEqual(before, after)
         self.assertEqual(list(after), ['ND.sav'])
 
+    def test_save_manifest_hashes_only_persistent_save_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'ND.sav').write_bytes(b'save data')
+            (root / 'ND.header').write_bytes(b'header data')
+            (root / 'cache.bin').write_bytes(b'ignored')
+            manifest = profile.snapshot_save_files(root)
+
+        self.assertEqual(set(manifest), {'ND.sav', 'ND.header'})
+        self.assertEqual(manifest['ND.sav']['size_bytes'], 9)
+        self.assertEqual(
+            manifest['ND.sav']['sha256'],
+            'AFC86DA5FE946F7F46A082D79B228D23E0EA0EA4014EDBB7031AE453FBD9DEF4',
+        )
+
 
 class TargetedInputTests(unittest.TestCase):
     def test_save_harness_does_not_use_global_input(self):
