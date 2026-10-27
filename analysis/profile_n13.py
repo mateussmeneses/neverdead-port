@@ -193,10 +193,11 @@ def measure_bmp(path):
     height_abs = abs(height)
     luminance_sum = 0.0
     channel_sums = [0, 0, 0]
+    luminance_histogram = [0] * 8
     non_black = 0
     sampled = 0
-    for gx in range(10, 90, 7):
-        for gy in range(10, 90, 7):
+    for gx in range(5, 96, 3):
+        for gy in range(5, 96, 3):
             x = width * gx // 100
             y = height_abs * gy // 100
             row = height_abs - 1 - y if height > 0 else y
@@ -205,7 +206,9 @@ def measure_bmp(path):
             channel_sums[0] += red
             channel_sums[1] += green
             channel_sums[2] += blue
-            luminance_sum += 0.299 * red + 0.587 * green + 0.114 * blue
+            luminance = 0.299 * red + 0.587 * green + 0.114 * blue
+            luminance_sum += luminance
+            luminance_histogram[min(7, int(luminance) // 32)] += 1
             non_black += red > 15 or green > 15 or blue > 15
             sampled += 1
     return {
@@ -214,6 +217,7 @@ def measure_bmp(path):
         'non_black_ratio': non_black / sampled,
         'average_luminance': luminance_sum / sampled,
         'average_rgb': [value / sampled for value in channel_sums],
+        'luminance_histogram': [value / sampled for value in luminance_histogram],
     }
 
 def compare_bmp(reference_path, candidate_path):
@@ -223,16 +227,20 @@ def compare_bmp(reference_path, candidate_path):
         reference['average_luminance'], 1.0) * 100.0
     channel_delta = max(abs(a - b) for a, b in zip(
         reference['average_rgb'], candidate['average_rgb']))
+    histogram_distance = sum(abs(a - b) for a, b in zip(
+        reference['luminance_histogram'], candidate['luminance_histogram'])) / 2.0
     passed = (reference['width'] == candidate['width'] and
               reference['height'] == candidate['height'] and
               luminance_delta_pct <= 10.0 and channel_delta <= 12.0 and
-              abs(candidate['non_black_ratio'] - reference['non_black_ratio']) <= 0.1)
+              abs(candidate['non_black_ratio'] - reference['non_black_ratio']) <= 0.1 and
+              histogram_distance <= 0.2)
     return {
         'passed': passed,
         'reference': str(reference_path),
         'candidate': str(candidate_path),
         'luminance_delta_pct': luminance_delta_pct,
         'maximum_average_channel_delta': channel_delta,
+        'luminance_histogram_distance': histogram_distance,
     }
 
 def get_idle_seconds():

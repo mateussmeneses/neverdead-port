@@ -52,6 +52,7 @@ foreach ($variant in $variants) {
         Snorm16FullRange = $profile.render_options.snorm16_render_target_full_range
         LuminanceDeltaPercent = $profile.visual_gate.luminance_delta_pct
         MaximumAverageChannelDelta = $profile.visual_gate.maximum_average_channel_delta
+        LuminanceHistogramDistance = $profile.visual_gate.luminance_histogram_distance
         CaptureMetrics = $profile.gameplay_gate.capture_metrics
     }
 }
@@ -61,7 +62,8 @@ $hypothesisSupported = (
     $results[0].Snorm16FullRange -and
     -not $results[1].Snorm16FullRange -and
     $results[1].LuminanceDeltaPercent -lt $results[0].LuminanceDeltaPercent -and
-    $results[1].MaximumAverageChannelDelta -lt $results[0].MaximumAverageChannelDelta
+    $results[1].MaximumAverageChannelDelta -lt $results[0].MaximumAverageChannelDelta -and
+    $results[1].LuminanceHistogramDistance -lt $results[0].LuminanceHistogramDistance
 )
 $passed = (
     $hypothesisSupported -and

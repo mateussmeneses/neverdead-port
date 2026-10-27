@@ -104,6 +104,9 @@ while the laptop is in active use.
 The A/B also records the effective fixed16 policy and requires limited-range to
 pass the gameplay, performance and visual gates while improving both luminance
 and RGB-channel deltas.
+The image gate now also compares an eight-bin luminance distribution. Historical
+ROV repeats differ by 0.119–0.126, while the dark RTV captures differ by
+0.608–0.609, so the acceptance limit is conservatively set to 0.20.
 
 Canary commit `534aeb6` (2026-10-23) quantizes PWL gamma after MSAA averaging.
 NeverDead does create format 1 (`k_8_8_8_8_GAMMA`) pipelines, so the change is
@@ -138,7 +141,7 @@ without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
 still terminates the game. The soak now uses the validated Right Arrow camera
-yaw and holds aim while firing. Nineteen unit tests cover the profiler and controller.
+yaw and holds aim while firing. Twenty unit tests cover the profiler and controller.
 Input is sent only to the game window, the game runs below normal priority, and a named
 mutex prevents concurrent profilers. Unattended runs now require a 15-minute
 idle window; the queue is intentionally stopped while the laptop is in active

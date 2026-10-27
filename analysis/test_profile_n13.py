@@ -9,14 +9,19 @@ import analysis.profile_n13 as profile
 from analysis.profile_n13 import compare_bmp, measure_bmp
 
 
-def write_bmp(path, red, green, blue):
+def write_bmp(path, red, green, blue, alternate_rgb=None):
     width = height = 8
     row_stride = width * 3
-    pixels = bytes((blue, green, red)) * width * height
+    colors = ((red, green, blue), alternate_rgb)
+    pixels = bytearray()
+    for y in range(height):
+        for x in range(width):
+            color = colors[(x + y) % 2] if alternate_rgb else colors[0]
+            pixels.extend((color[2], color[1], color[0]))
     header = (b"BM" + struct.pack("<IHHI", 54 + len(pixels), 0, 0, 54) +
               struct.pack("<IiiHHIIiiII", 40, width, height, 1, 24, 0,
                           len(pixels), 0, 0, 0, 0))
-    path.write_bytes(header + pixels)
+    path.write_bytes(header + bytes(pixels))
 
 
 class BmpGateTests(unittest.TestCase):
@@ -30,6 +35,17 @@ class BmpGateTests(unittest.TestCase):
             self.assertAlmostEqual(measure_bmp(reference)['average_rgb'][0], 100)
             self.assertTrue(compare_bmp(reference, reference)['passed'])
             self.assertFalse(compare_bmp(reference, dark)['passed'])
+
+    def test_rejects_different_luminance_distribution_with_same_average(self):
+        with tempfile.TemporaryDirectory() as directory:
+            reference = Path(directory) / "reference.bmp"
+            pattern = Path(directory) / "pattern.bmp"
+            write_bmp(reference, 96, 96, 96)
+            write_bmp(pattern, 32, 32, 32, alternate_rgb=(160, 160, 160))
+
+            result = compare_bmp(reference, pattern)
+            self.assertFalse(result['passed'])
+            self.assertGreater(result['luminance_histogram_distance'], 0.2)
 
 
 class StabilityGateTests(unittest.TestCase):
@@ -218,6 +234,7 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('$results[1].GameplayGatePassed', runner)
         self.assertIn('$results[1].PerformanceGatePassed', runner)
         self.assertIn('$results[1].MaximumAverageChannelDelta -lt', runner)
+        self.assertIn('$results[1].LuminanceHistogramDistance -lt', runner)
         self.assertIn('$results[0].Snorm16FullRange', runner)
         self.assertIn('-not $results[1].Snorm16FullRange', runner)
         self.assertIn('HypothesisSupported = $hypothesisSupported', runner)
