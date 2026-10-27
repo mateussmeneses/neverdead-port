@@ -355,10 +355,6 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     proc = subprocess.Popen(cmd, cwd=os.path.dirname(exe_path), env=runtime_env,
                             creationflags=creationflags)
     user_activity_detected = threading.Event()
-    if stop_on_user_activity:
-        threading.Thread(target=stop_process_when_user_returns,
-                         args=(proc, user_activity_detected, get_last_input_tick()),
-                         daemon=True).start()
     h_proc = wintypes.HANDLE(ctypes.windll.kernel32.OpenProcess(0x1000 | 0x0400, False, proc.pid))
 
     rss_samples = []
@@ -395,6 +391,11 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
                 f"{artifact_label} stopped because laptop activity resumed")
         raise RuntimeError(f"{artifact_label} game window was not created")
     print(f"[{scenario.upper()}] Window acquired: 0x{hwnd:X}")
+    if stop_on_user_activity:
+        # The runtime may update Windows input state while creating its window.
+        threading.Thread(target=stop_process_when_user_returns,
+                         args=(proc, user_activity_detected, get_last_input_tick()),
+                         daemon=True).start()
 
     print(f"[{scenario.upper()}] Stage 1: Waiting 55s for intro & title screen...")
     for _ in range(550):
