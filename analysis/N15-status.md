@@ -93,6 +93,11 @@ explains the dark output.
 
 The affected combinations are not one isolated state: 14 are conventional
 `SRC_ALPHA/INV_SRC_ALPHA` blends and 14 are additive `SRC_ALPHA/ONE` blends.
+Offline decoding of the same 136-entry pipeline cache also rules out a
+write-mask shortcut: 93 of the 100 fixed16 bindings write RGBA, seven write
+nothing, and all 28 alpha-dependent color blends write alpha. The less common
+states are two `ONE/ONE`, one `ONE/INV_SRC_ALPHA` and one
+`DEST_COLOR/ZERO` binding; the remaining 61 are unblended `ONE/ZERO` writes.
 Xenia [documents full-range RTV](https://github.com/xenia-canary/xenia-canary/wiki/Options)
 as trading away blending correctness, and its current implementation has no
 compensation to port.
