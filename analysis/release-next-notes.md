@@ -22,7 +22,7 @@ date remain intentionally unset until the N15 runtime gates pass.
 - Missing NeverDead PPC thunk boundaries found by soak testing are registered.
 - Release ZIP inspection now rejects unexpected, empty and unsafe files,
   verifies Windows binary signatures, and requires ROV plus safe fetch
-  constants in the packaged config.
+  constants in the packaged config and N15 evidence markers in the binaries.
 
 ## Known limitation
 

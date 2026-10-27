@@ -8,6 +8,20 @@ $resolvedZip = (Resolve-Path -LiteralPath $ZipPath).Path
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [System.IO.Compression.ZipFile]::OpenRead($resolvedZip)
 
+function Test-ArchiveEntryMarker {
+    param($Entry, [string]$Marker)
+    $stream = $Entry.Open()
+    $memory = [IO.MemoryStream]::new()
+    try {
+        $stream.CopyTo($memory)
+        return [Text.Encoding]::ASCII.GetString($memory.ToArray()).Contains($Marker)
+    }
+    finally {
+        $memory.Dispose()
+        $stream.Dispose()
+    }
+}
+
 try {
     $files = @($archive.Entries | Where-Object { $_.Name })
     $roots = @($files.FullName | ForEach-Object { ($_ -split '/')[0] } | Sort-Object -Unique)
@@ -51,6 +65,15 @@ try {
         }
     }
 
+    $exeEntry = $files | Where-Object Name -eq 'neverdead.exe'
+    $runtimeEntry = $files | Where-Object Name -eq 'rexruntime.dll'
+    if (-not (Test-ArchiveEntryMarker $exeEntry 'N15 gameplay pause thunk 0x8253B640 reached')) {
+        throw 'Packaged executable lacks the N15 resumed-gameplay evidence marker'
+    }
+    if (-not (Test-ArchiveEntryMarker $runtimeEntry 'Read save file:')) {
+        throw 'Packaged runtime lacks the N15 save-read evidence marker'
+    }
+
     $configEntry = $files | Where-Object Name -eq 'neverdead.toml'
     $reader = [System.IO.StreamReader]::new($configEntry.Open())
     try {
@@ -72,6 +95,7 @@ try {
         Root = $roots[0]
         Files = $actual.Count
         RenderTargetPath = 'rov'
+        EvidenceMarkers = 'present'
         SHA256 = $hash
         Passed = $true
     }

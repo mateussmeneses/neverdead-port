@@ -146,7 +146,7 @@ without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
 still terminates the game. The soak now uses the validated Right Arrow camera
-yaw and holds aim while firing. Twenty-two unit tests cover the profiler and controller.
+yaw and holds aim while firing. Twenty-three unit tests cover the profiler and controller.
 Input is sent only to the game window, the game runs below normal priority, and a named
 mutex prevents concurrent profilers. Unattended runs now require a 15-minute
 idle window; the queue is intentionally stopped while the laptop is in active
@@ -219,6 +219,7 @@ terminates it.
 Release inspection is now automated by `validate_release_zip.ps1`. It rejects
 extra, missing, duplicate or empty files and unsafe traversal paths, verifies
 the PE signature of every packaged executable and DLL, and requires the config
-to retain ROV plus safe fetch-constant validation. The existing v0.2.1 archive
-passes these checks, but a fresh package is still required after the runtime
-gates and current commits.
+to retain ROV plus safe fetch-constant validation. It also requires the N15
+save-read and resumed-gameplay markers in the packaged binaries, so the old
+v0.2.1 archive is intentionally obsolete. A fresh package is still required
+after the runtime gates and current commits.

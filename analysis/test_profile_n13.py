@@ -289,6 +289,12 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('__imp__sub_8253B640(ctx, base);', diagnostic)
         self.assertIn('src/neverdead_diagnostics.cpp', cmake)
 
+    def test_release_validator_requires_n15_runtime_markers(self):
+        validator = (Path(profile.__file__).parent / 'validate_release_zip.ps1').read_text()
+        self.assertIn('N15 gameplay pause thunk 0x8253B640 reached', validator)
+        self.assertIn('Read save file:', validator)
+        self.assertIn("EvidenceMarkers = 'present'", validator)
+
     def test_input_is_sent_only_to_game_window(self):
         class FakeUser32:
             def __init__(self):
