@@ -44,8 +44,8 @@ class StabilityGateTests(unittest.TestCase):
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1800.0},
             'save_persistence': {
-                'initial_files': {},
-                'final_files': {'ND.sav': {'sha256': 'A'}},
+                'initial_files': {'ND.sav': {'sha256': 'A'}},
+                'final_files': {'ND.sav': {'sha256': 'B'}},
             },
             'stability_actions': {
                 'combat': 1,
@@ -72,8 +72,8 @@ class StabilityGateTests(unittest.TestCase):
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1200.0, 'rendered_seconds': 1200.0},
             'save_persistence': {
-                'initial_files': {},
-                'final_files': {'ND.sav': {'sha256': 'A'}},
+                'initial_files': {'ND.sav': {'sha256': 'A'}},
+                'final_files': {'ND.sav': {'sha256': 'B'}},
             },
             'stability_actions': {
                 'combat': 1,
@@ -94,8 +94,8 @@ class StabilityGateTests(unittest.TestCase):
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1200.0},
             'save_persistence': {
-                'initial_files': {},
-                'final_files': {'ND.sav': {'sha256': 'A'}},
+                'initial_files': {'ND.sav': {'sha256': 'A'}},
+                'final_files': {'ND.sav': {'sha256': 'B'}},
             },
             'stability_actions': {
                 'combat': 1,
@@ -116,6 +116,28 @@ class StabilityGateTests(unittest.TestCase):
             'frames_captured': 36000,
             'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1800.0},
             'save_persistence': {'initial_files': {}, 'final_files': {}},
+            'stability_actions': {
+                'combat': 1,
+                'pause_resume': 5,
+                'focus_cycles': 3,
+                'checkpoint_saves': 2,
+            },
+            'ppc_and_system': {'total_xma_frames': 1},
+            'audio': {'buffer_underruns': 0},
+            'log_health': {'fatal_crashes': 0, 'd3d12_errors': 0, 'dred_faults': 0},
+        }
+        gate = profile.evaluate_stability_gate(results, 1800)
+        self.assertFalse(gate['checks']['checkpoint_state_persisted'])
+        self.assertFalse(gate['passed'])
+
+    def test_rejects_rewritten_save_with_unchanged_content(self):
+        results = {
+            'frames_captured': 36000,
+            'measurement_window': {'elapsed_seconds': 1800.0, 'rendered_seconds': 1800.0},
+            'save_persistence': {
+                'initial_files': {'ND.sav': {'sha256': 'A', 'modified_ns': 1}},
+                'final_files': {'Renamed.sav': {'sha256': 'A', 'modified_ns': 2}},
+            },
             'stability_actions': {
                 'combat': 1,
                 'pause_resume': 5,
@@ -159,6 +181,9 @@ class StabilityGateTests(unittest.TestCase):
             manifest['ND.sav']['sha256'],
             'AFC86DA5FE946F7F46A082D79B228D23E0EA0EA4014EDBB7031AE453FBD9DEF4',
         )
+        self.assertEqual(profile.get_save_content_hashes(manifest), {
+            'ND.sav': 'AFC86DA5FE946F7F46A082D79B228D23E0EA0EA4014EDBB7031AE453FBD9DEF4'
+        })
 
 
 class TargetedInputTests(unittest.TestCase):

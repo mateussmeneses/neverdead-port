@@ -134,7 +134,7 @@ game, waits for another 15-minute Windows idle period and repeats the same run
 without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
-still terminates the game. Eighteen unit tests cover the profiler and controller.
+still terminates the game. Nineteen unit tests cover the profiler and controller.
 Input is sent only to the game window, the game runs below normal priority, and a named
 mutex prevents concurrent profilers. Unattended runs now require a 15-minute
 idle window; the queue is intentionally stopped while the laptop is in active
@@ -149,8 +149,11 @@ of multiple checkpoint saves. Completion requires both the minimum frame count
 and the full requested monotonic wall-clock duration, with accumulated frame
 times covering at least 95% of that window. This prevents an early exit at high
 FPS or a frozen tail from passing the soak gate. For a 30-minute run, the final
-manifest must also contain a `.sav` and differ from the initial state; observed
-write events alone no longer satisfy checkpoint persistence.
+manifest must also contain a `.sav` whose SHA-256 differs from the initial
+content. Checkpoint counts advance only when a previously unseen `.sav` hash is
+observed; timestamp-only rewrites no longer satisfy persistence. This matters
+because nearly all historical short-run saves have identical content despite
+different modification times.
 
 The older N12 report proves that an existing `ND.sav` is enumerated and remains
 byte-identical after relaunch, but it does not close the N15 save gate: its

@@ -116,6 +116,13 @@ def snapshot_save_files(path):
                 pass
     return snapshot
 
+def get_save_content_hashes(manifest):
+    return {
+        name: metadata['sha256']
+        for name, metadata in manifest.items()
+        if name.lower().endswith('.sav')
+    }
+
 def calculate_percentile(sorted_list, p):
     if not sorted_list:
         return 0.0
@@ -143,7 +150,8 @@ def evaluate_stability_gate(results, requested_seconds):
     actions = results['stability_actions']
     health = results['log_health']
     save_persistence = results['save_persistence']
-    final_save_files = save_persistence['final_files']
+    initial_save_hashes = get_save_content_hashes(save_persistence['initial_files'])
+    final_save_hashes = get_save_content_hashes(save_persistence['final_files'])
     checks = {
         'completed_duration': (
             results['measurement_window']['elapsed_seconds'] >= requested_seconds and
@@ -156,8 +164,7 @@ def evaluate_stability_gate(results, requested_seconds):
         'checkpoint_saves': (actions['checkpoint_saves'] >= 2
                              if requested_seconds >= 1800 else True),
         'checkpoint_state_persisted': (
-            any(name.lower().endswith('.sav') for name in final_save_files) and
-            final_save_files != save_persistence['initial_files']
+            bool(set(final_save_hashes.values()) - set(initial_save_hashes.values()))
             if requested_seconds >= 1800 else True
         ),
         'audio_xma_active': results['ppc_and_system']['total_xma_frames'] > 0,
@@ -524,6 +531,7 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
     }
     save_write_snapshot = snapshot_save_writes(run_user_dir)
     save_files_initial = snapshot_save_files(run_user_dir)
+    observed_save_hashes = set(get_save_content_hashes(save_files_initial).values())
     next_pause = gameplay_start + 300.0
     next_focus = gameplay_start + 450.0
 
@@ -592,7 +600,11 @@ def run_gameplay_benchmark(scenario, gameplay_duration_sec, exe_path, game_data_
         cycle_counter += 1
         current_save_writes = snapshot_save_writes(run_user_dir)
         if current_save_writes != save_write_snapshot:
-            stability_actions['checkpoint_saves'] += 1
+            current_save_files = snapshot_save_files(run_user_dir)
+            current_save_hashes = set(get_save_content_hashes(current_save_files).values())
+            if current_save_hashes - observed_save_hashes:
+                stability_actions['checkpoint_saves'] += 1
+                observed_save_hashes.update(current_save_hashes)
             save_write_snapshot = current_save_writes
         time.sleep(0.1)
 
