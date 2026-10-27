@@ -66,7 +66,7 @@ $aggregate = [ordered]@{
     ExpectedSaveHash = $expectedSaveHash
     PersistedSaveReopened = $persistedSaveReopened
     ReopenItemsEnumerated = $reopen.SavePersistence.ItemsEnumerated
-    SaveFileOpensAfterCampaign = $reopen.SavePersistence.SaveFileOpensAfterCampaign
+    SaveFileReadsAfterCampaign = $reopen.SavePersistence.SaveFileReadsAfterCampaign
     ReopenCaptures = @($reopen.Captures).Count
     ReopenReport = 'n15_save_reopen_cycle_report.json'
 }

@@ -233,8 +233,8 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('exit 75', harness)
         self.assertIn('Where-Object LastWriteTimeUtc -ge $captureStartedUtc', harness)
         self.assertIn('Local\\NeverDeadGameplayProfiler', harness)
-        self.assertIn("$saveOpenMarker = 'Opened save file:'", harness)
-        self.assertIn('SaveFileOpensAfterCampaign = $saveOpensAfterCampaign', harness)
+        self.assertIn("$saveReadMarker = 'Read save file:'", harness)
+        self.assertIn('SaveFileReadsAfterCampaign = $saveReadsAfterCampaign', harness)
 
     def test_save_reopen_runner_uses_soak_user_data_root(self):
         runner = (Path(profile.__file__).parent / 'test_n15_save_reopen.ps1').read_text()
@@ -244,7 +244,7 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('-UserDataRoot $userDir', runner)
         self.assertIn('$expectedSaveHash -eq $reopen.SavePersistence.InitialHash', runner)
         self.assertIn('$soak.stability_gate.checks.checkpoint_state_persisted', runner)
-        self.assertIn('SaveFileOpensAfterCampaign', runner)
+        self.assertIn('SaveFileReadsAfterCampaign', runner)
         self.assertIn('ContinueVerified = $false', runner)
         self.assertNotIn('continue gate PASS', runner)
 
