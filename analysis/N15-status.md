@@ -146,7 +146,7 @@ without manual re-arming. The watchdog is armed after runtime window creation,
 so synthetic startup input is ignored, and later input resets are ignored only
 while the runtime itself owns the foreground; activity in another application
 still terminates the game. The soak now uses the validated Right Arrow camera
-yaw and holds aim while firing. Twenty unit tests cover the profiler and controller.
+yaw and holds aim while firing. Twenty-one unit tests cover the profiler and controller.
 Input is sent only to the game window, the game runs below normal priority, and a named
 mutex prevents concurrent profilers. Unattended runs now require a 15-minute
 idle window; the queue is intentionally stopped while the laptop is in active
@@ -184,6 +184,10 @@ The reopen runner now consumes a passed soak profile, reuses its exact user-data
 root, requires its persisted-checkpoint gate, and confirms the final `ND.sav`
 hash before testing enumeration. It reports only persistence/reopen and leaves
 `ContinueVerified` false until resumed gameplay has direct evidence.
+`run_n15_stability_cycle.ps1` now chains the complete unattended sequence: it
+waits for 15 minutes of idle time, runs a fresh 30–60 minute ROV soak, rejects a
+stale or failed profile, and passes that exact profile to the reopen runner. Its
+aggregate cannot pass while `ContinueVerified` remains false.
 
 ## 4. Remaining acceptance checks
 

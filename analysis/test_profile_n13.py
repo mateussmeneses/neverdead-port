@@ -260,6 +260,16 @@ class TargetedInputTests(unittest.TestCase):
         self.assertIn('-not $results[1].Snorm16FullRange', runner)
         self.assertIn('HypothesisSupported = $hypothesisSupported', runner)
 
+    def test_stability_cycle_uses_fresh_soak_for_reopen(self):
+        runner = (Path(profile.__file__).parent / 'run_n15_stability_cycle.ps1').read_text()
+        self.assertIn('[int]$WaitForIdleSeconds = 900', runner)
+        self.assertIn('[ValidateRange(1800, 3600)]', runner)
+        self.assertIn("'--stability'", runner)
+        self.assertIn('$profileFile.LastWriteTimeUtc -lt $runStartedUtc', runner)
+        self.assertIn('-SoakProfilePath $profilePath', runner)
+        self.assertIn('$reopen.ContinueVerified', runner)
+        self.assertIn('if (-not $passed)', runner)
+
     def test_input_is_sent_only_to_game_window(self):
         class FakeUser32:
             def __init__(self):
