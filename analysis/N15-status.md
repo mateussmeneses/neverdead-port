@@ -106,10 +106,15 @@ then the user-activity watchdog stopped it before the first five-minute pause;
 the runtime log contains no crash, missing-function or DRED signature. The
 controller now treats this as a recoverable interruption: it terminates the
 game, waits for another five-minute Windows idle period and repeats the same run
-without manual re-arming. Input is sent only to the game window, the game runs
-below normal priority, and a named mutex prevents concurrent profilers. A
-successful 15-minute confirmation will be followed by the full 30-minute soak
-and the save → close → reopen → continue cycle. The stability gate now
+without manual re-arming. The watchdog is armed after runtime window creation,
+so synthetic startup input is ignored, and later input resets are ignored only
+while the runtime itself owns the foreground; activity in another application
+still terminates the game. Thirteen unit tests cover the controller. Input is
+sent only to the game window, the game runs below normal priority, and a named
+mutex prevents concurrent profilers. Unattended runs now require a 15-minute
+idle window; the queue is intentionally stopped while the laptop is in active
+use. A successful 15-minute confirmation will be followed by the full 30-minute
+soak and the save → close → reopen → continue cycle. The stability gate now
 requires the requested duration, combat, scheduled pause/resume and focus
 cycles, active XMA decoding, zero audio underruns, and zero fatal, D3D12 or DRED
 faults. Memory evidence includes peak, start/end growth and linear RSS/commit
