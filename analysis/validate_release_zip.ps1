@@ -30,6 +30,8 @@ try {
     }
 
     $expected = @(
+        'Play.cmd'
+        'launcher.ps1'
         'README.md'
         'neverdead.exe'
         'neverdead.toml'

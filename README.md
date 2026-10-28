@@ -73,6 +73,25 @@ A native Windows x64 port of **NeverDead** (Xbox 360, Asura Engine) via static r
 
 ## Building from Source
 
+### Packaged alpha launcher
+
+Extract the entire release ZIP and open `Play.cmd` on Windows. Select the root
+of your own extracted NeverDead copy and click **Play**. The launcher checks
+basic required files and forces the ROV renderer; this presence check does not
+certify the integrity or completeness of a game dump.
+
+Saves, caches and session logs live under `%LOCALAPPDATA%\NeverDeadPort` in
+`user`, `cache` and `logs`. **Open saves** and **Open logs** open those folders.
+Upgrading the extracted port does not replace this data. Earlier development
+saves are not imported automatically; back up your old user-data directory
+before manually copying its contents into the new `user` directory with the
+game closed. The release contains no commercial game assets.
+
+The launcher uses Windows PowerShell and Windows Forms already included with
+Windows. Managed devices may restrict script execution.
+
+### Source build
+
 1. Clone this repository:
    ```powershell
    git clone https://github.com/mateussmeneses/neverdead-port.git

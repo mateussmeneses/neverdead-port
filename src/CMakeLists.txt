@@ -35,6 +35,8 @@ configure_file(neverdead.toml neverdead.toml COPYONLY)
 
 install(TARGETS neverdead RUNTIME DESTINATION . COMPONENT Runtime)
 install(FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/launcher.ps1"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Play.cmd"
     "$<TARGET_FILE:rexruntime>"
     "$<TARGET_FILE:rexgpu-xenos>"
     "${CMAKE_CURRENT_BINARY_DIR}/neverdead.toml"
