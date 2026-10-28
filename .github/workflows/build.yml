@@ -1,4 +1,4 @@
-name: Build & QA Verification
+name: Offline QA (no native game build)
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build-and-qa:
-    name: Windows x64 Build & QA Gate
+    name: Windows offline checks (not release approval)
     runs-on: windows-latest
 
     steps:
@@ -26,13 +26,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Set up Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
-
-      - name: Set up MSVC Dev Environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
+      - name: Declare validation scope
+        shell: pwsh
+        run: |
+          '## Offline validation only' >> $env:GITHUB_STEP_SUMMARY
+          'This job does not generate or compile neverdead.exe. Private game assets are unavailable. Historical reports and skipped live checks do not approve gameplay or a release.' >> $env:GITHUB_STEP_SUMMARY
 
       - name: Verify Clean Workspace (No Proprietary Game Binaries)
         shell: pwsh

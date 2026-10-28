@@ -571,7 +571,7 @@ def run_verify_recent() -> int:
         print(" [!] REGRESSION DETECTED: One or more QA checks failed.")
         return 1
     else:
-        print(" [OK] QA GATES SATISFIED (Zero fatal failures or memory regressions).")
+        print(" [OK] Historical/offline checks found no FAIL; this is not current-build gameplay or release approval.")
         return 0
 
 
