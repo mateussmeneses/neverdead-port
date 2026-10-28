@@ -1,9 +1,15 @@
 # NeverDead PC Native Port — Next Alpha Release (Draft)
 
-This draft covers the changes after `v0.2.1-alpha`. The version and release
+This draft covers the changes after the published `v0.2.0-alpha` and the local
+`v0.2.1-alpha` package. The version and release
 date remain intentionally unset until the N15 runtime gates pass.
 
 ## Verified changes
+
+- A Windows launcher selects and remembers the game folder, checks basic
+  required files, starts with ROV and opens saves/logs. Data is kept under
+  `%LOCALAPPDATA%\NeverDeadPort`, independently of the extracted release.
+  Folder validation tests pass; visual and real-launch acceptance is pending.
 
 - ROV remains the default render-target path and restores the HDR gameplay
   scene that is still dark on RTV.
@@ -34,6 +40,8 @@ required before RTV can be reconsidered; it must produce a capture within the
 10% luminance, 12-point channel-delta and 0.20 luminance-histogram limits.
 
 ## Required before publishing
+
+- Validate launcher UI, actual launch, paths with spaces, and saves/logs buttons.
 
 - Pass the 15-minute confirmation and 30-minute stability soak.
 - Pass save → close → reopen → continue against the same save root.

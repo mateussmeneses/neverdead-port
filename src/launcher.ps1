@@ -50,11 +50,12 @@ $play.Add_Click({
             if (!(Test-Path -LiteralPath (Join-Path $PSScriptRoot $name) -PathType Leaf)) { throw "Port file missing: $name. Extract the complete release ZIP." }
         }
         foreach ($name in @('user', 'cache', 'logs')) { [IO.Directory]::CreateDirectory((Join-Path $data $name)) | Out-Null }
-        $root = (Resolve-Path -LiteralPath $folder.Text).Path.TrimEnd('\')
+        # A trailing separator before a closing quote changes Windows argv parsing.
+        $root = Join-Path (Resolve-Path -LiteralPath $folder.Text).Path '.'
         $log = Join-Path $data ('logs\session-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.log')
         $arguments = '--game_data_root="{0}" --user_data_root="{1}\user" --cache_root="{1}\cache" --log_file="{2}" --render_target_path_d3d12=rov --gpu_allow_invalid_fetch_constants=false --log_level=info' -f $root, $data, $log
-        Start-Process -FilePath $exe -ArgumentList $arguments -WorkingDirectory $PSScriptRoot | Out-Null
         [IO.File]::WriteAllText($settings, $root)
+        Start-Process -FilePath $exe -ArgumentList $arguments -WorkingDirectory $PSScriptRoot | Out-Null
         $form.Close()
     } catch { [Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Unable to launch') | Out-Null }
 })
