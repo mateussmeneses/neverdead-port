@@ -13,6 +13,16 @@ function Test-GameFolder([string]$Folder) {
     }
 }
 
+function Get-LaunchArguments([string]$Root, [string]$Data, [string]$Log) {
+    foreach ($path in @($Root, $Data, $Log)) {
+        if ([string]::IsNullOrWhiteSpace($path) -or $path.Contains('"') -or $path.Contains("`n") -or $path.Contains("`r")) {
+            throw 'Invalid path in launch arguments.'
+        }
+    }
+    $gamePath = Join-Path $Root '.'
+    return '--game_data_root="{0}" --user_data_root="{1}\user" --cache_root="{1}\cache" --log_file="{2}" --render_target_path_d3d12=rov --gpu_allow_invalid_fetch_constants=false --log_level=info' -f $gamePath, $Data.TrimEnd('\'), $Log
+}
+
 if ($ValidateOnly) { Test-GameFolder $GameFolder; return }
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -53,7 +63,7 @@ $play.Add_Click({
         # A trailing separator before a closing quote changes Windows argv parsing.
         $root = Join-Path (Resolve-Path -LiteralPath $folder.Text).Path '.'
         $log = Join-Path $data ('logs\session-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.log')
-        $arguments = '--game_data_root="{0}" --user_data_root="{1}\user" --cache_root="{1}\cache" --log_file="{2}" --render_target_path_d3d12=rov --gpu_allow_invalid_fetch_constants=false --log_level=info' -f $root, $data, $log
+        $arguments = Get-LaunchArguments $root $data $log
         [IO.File]::WriteAllText($settings, $root)
         Start-Process -FilePath $exe -ArgumentList $arguments -WorkingDirectory $PSScriptRoot | Out-Null
         $form.Close()

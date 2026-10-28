@@ -18,6 +18,19 @@ try {
         [IO.File]::WriteAllBytes($file, [byte[]]@(1))
     }
     & $launcher -ValidateOnly -GameFolder $fixture
+    . $launcher -ValidateOnly -GameFolder $fixture
+    foreach ($root in @('C:\', 'C:\Game folder')) {
+        $argsLine = Get-LaunchArguments $root 'C:\User data' 'C:\User data\session.log'
+        if (!$argsLine.Contains('--game_data_root="' + (Join-Path $root '.') + '"') -or
+            !$argsLine.Contains('--user_data_root="C:\User data\user"') -or
+            !$argsLine.Contains('--render_target_path_d3d12=rov') -or
+            !$argsLine.Contains('--gpu_allow_invalid_fetch_constants=false')) {
+            throw 'Launch arguments lost path quoting or safe renderer settings.'
+        }
+    }
+    $rejected = $false
+    try { Get-LaunchArguments 'C:\bad" --other=value' 'C:\data' 'C:\log' } catch { $rejected = $true }
+    if (!$rejected) { throw 'Accepted a quote in launch path.' }
     foreach ($relative in $required) {
         $file = Join-Path $fixture $relative
         [IO.File]::WriteAllBytes($file, [byte[]]@())
