@@ -60,6 +60,10 @@ jobs:
         shell: pwsh
         run: python -m unittest analysis.test_profile_n13
 
+      - name: Test Launcher Without Game Assets
+        shell: powershell
+        run: ./analysis/test_launcher.ps1
+
       - name: Parse PowerShell Harnesses
         shell: pwsh
         run: |
