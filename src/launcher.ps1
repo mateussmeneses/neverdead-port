@@ -72,11 +72,23 @@ $play.Add_Click({
 $saves = New-Object Windows.Forms.Button
 $saves.Text = 'Open saves'
 $saves.SetBounds(190, 100, 160, 35)
-$saves.Add_Click({ $path = Join-Path $data 'user'; [IO.Directory]::CreateDirectory($path) | Out-Null; Start-Process explorer.exe -ArgumentList ('"' + $path + '"') })
+$saves.Add_Click({
+    try {
+        $path = Join-Path $data 'user'
+        [IO.Directory]::CreateDirectory($path) | Out-Null
+        Start-Process explorer.exe -ArgumentList ('"' + $path + '"')
+    } catch { [Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Unable to open saves') | Out-Null }
+})
 $logs = New-Object Windows.Forms.Button
 $logs.Text = 'Open logs'
 $logs.SetBounds(365, 100, 160, 35)
-$logs.Add_Click({ $path = Join-Path $data 'logs'; [IO.Directory]::CreateDirectory($path) | Out-Null; Start-Process explorer.exe -ArgumentList ('"' + $path + '"') })
+$logs.Add_Click({
+    try {
+        $path = Join-Path $data 'logs'
+        [IO.Directory]::CreateDirectory($path) | Out-Null
+        Start-Process explorer.exe -ArgumentList ('"' + $path + '"')
+    } catch { [Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Unable to open logs') | Out-Null }
+})
 $form.Controls.AddRange(@($label, $folder, $browse, $play, $saves, $logs))
 if ($PreviewPath) {
     $form.CreateControl()
