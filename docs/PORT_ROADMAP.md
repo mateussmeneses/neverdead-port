@@ -2,6 +2,35 @@
 
 This roadmap outlines upcoming milestones, performance enhancements, and quality-of-life features planned for future releases of the *NeverDead* native PC port.
 
+## Immediate priority: launcher and ROV alpha release
+
+This delivery track takes priority over the future phases below. N15 remains
+in progress: shipping an alpha with ROV does not mean RTV parity is complete.
+
+1. **Small Windows launcher**: select and remember the extracted game folder,
+   validate required files before launch, start with ROV and safe fetch-constant
+   validation, and provide buttons to open saves and logs. Use stable writable
+   user-data paths across upgrades. Never overwrite existing saves. Report
+   missing files and launch failures with actionable messages.
+2. **Runtime acceptance**: complete the pause/resume confirmation and a minimum
+   30-minute gameplay soak covering movement, camera, combat, focus changes,
+   multiple checkpoints, memory/cache growth, audio and DRED. Reopen the exact
+   saved state and prove Continue reaches gameplay. Short benchmark results
+   alone do not satisfy this gate.
+3. **Release package**: include the launcher, port binaries, configuration and
+   instructions; exclude commercial game files, saves, caches and local logs.
+   Update the archive allowlist for the launcher, validate the final ZIP and
+   publish its SHA-256 checksum. Test folder paths containing spaces.
+4. **GitHub prerelease**: publish only after the runtime and package gates pass,
+   with installation instructions and explicit RTV and other known limitations.
+
+Implementation scope excludes an updater, account system, mod manager and new
+graphics settings. ROV stays the release default. RTV work continues separately
+until automatic visual comparison passes.
+
+Current evidence and remaining gates: [N15 status](../analysis/N15-status.md)
+and [release draft](../analysis/release-next-notes.md).
+
 ---
 
 ## Phase 1: Core Performance & Xenon Vectorization (v0.2.x)
