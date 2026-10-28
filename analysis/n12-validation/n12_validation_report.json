@@ -1,116 +1,117 @@
 ﻿{
-    "SavePersistence":  {
-                            "FinalHash":  "8056DE75A7AF2232F905562153753001297F404AF0F0681BF3129274F746C9E2",
-                            "FinalSize":  3146752,
-                            "ItemsEnumerated":  0,
-                            "SaveMountCount":  0,
-                            "InitialSize":  3146752,
-                            "InitialHash":  "8056DE75A7AF2232F905562153753001297F404AF0F0681BF3129274F746C9E2",
-                            "DeviceSelectorTriggered":  false
-                        },
-    "Timestamp":  "2026-10-23T13:45:49.6122901-03:00",
-    "RunId":  "20261023-134501",
-    "Captures":  [
-                     {
-                         "SHA256":  "1CE1FD222E308945D3C7F9E5242084525A33A59239272A4C115FC25AA23B553C",
-                         "Description":  "Title screen waiting for Start input",
-                         "Stage":  "01-title-boot",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-01-title-boot-20261023-134519.png",
-                         "FileName":  "n12-01-title-boot-20261023-134519.png",
-                         "Size":  628960
-                     },
-                     {
-                         "SHA256":  "D618901B92E1D178E659511D44DA87BC159A33694B418497B89AD6BEB375E031",
-                         "Description":  "Main Menu after savegame detection",
-                         "Stage":  "02-save-enumerated-menu",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-02-save-enumerated-menu-20261023-134523.png",
-                         "FileName":  "n12-02-save-enumerated-menu-20261023-134523.png",
-                         "Size":  628116
-                     },
-                     {
-                         "SHA256":  "F2D131638C73A946935390DC1CC6B1D0CA36056E167155618B03C3BD670FC9E4",
-                         "Description":  "Menu selection cursor moved",
-                         "Stage":  "03-menu-navigation",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-03-menu-navigation-20261023-134525.png",
-                         "FileName":  "n12-03-menu-navigation-20261023-134525.png",
-                         "Size":  625779
-                     },
-                     {
-                         "SHA256":  "52FC0D507666309617455690F4F6FDD42A07B6375DCBAAF62950938608B53589",
-                         "Description":  "Campaign selection prompt",
-                         "Stage":  "04-campaign-prompt",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-04-campaign-prompt-20261023-134528.png",
-                         "FileName":  "n12-04-campaign-prompt-20261023-134528.png",
-                         "Size":  624640
-                     },
-                     {
-                         "SHA256":  "68663E894075420F3F45ECFDB97CED2A524AAF6D9502EA3DC9FEF80D8A12B73E",
-                         "Description":  "Prologue cutscene with audio sync",
-                         "Stage":  "05-prologue-cinematic",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-05-prologue-cinematic-20261023-134532.png",
-                         "FileName":  "n12-05-prologue-cinematic-20261023-134532.png",
-                         "Size":  620578
-                     },
-                     {
-                         "SHA256":  "52AEBAF3329CFF1D9BE78BABC661DBC70090215A349DBF08534AECB703FC250C",
-                         "Description":  "3D gameplay scene active",
-                         "Stage":  "06-gameplay-active",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-06-gameplay-active-20261023-134536.png",
-                         "FileName":  "n12-06-gameplay-active-20261023-134536.png",
-                         "Size":  616925
-                     },
-                     {
-                         "SHA256":  "1081CDFAA69D4D352C86B85B2BC14BB1F3E5FDC113B523A724072F6CC5E7FC3B",
-                         "Description":  "Bryce moving with character collision",
-                         "Stage":  "07-physics-movement",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-07-physics-movement-20261023-134539.png",
-                         "FileName":  "n12-07-physics-movement-20261023-134539.png",
-                         "Size":  617069
-                     },
-                     {
-                         "SHA256":  "73DB5C4E7FD9F6B6B076529A586F971AC8C3F1ADE6D536EE24B0E619D0AFF810",
-                         "Description":  "Camera perspective rotation",
-                         "Stage":  "08-camera-yaw",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-08-camera-yaw-20261023-134541.png",
-                         "FileName":  "n12-08-camera-yaw-20261023-134541.png",
-                         "Size":  618075
-                     },
-                     {
-                         "SHA256":  "A9A45D217C9EBF888E45859A83B99E8E1809F2BB5BE4E30D821C55CF54E53CE2",
-                         "Description":  "Character roll/jump state",
-                         "Stage":  "09-action-roll",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-09-action-roll-20261023-134542.png",
-                         "FileName":  "n12-09-action-roll-20261023-134542.png",
-                         "Size":  618384
-                     },
-                     {
-                         "SHA256":  "C9543AA674B18D31902A791D93D1585930454879A415313C3BC255354CCD3C53",
-                         "Description":  "In-game pause menu opened",
-                         "Stage":  "10-pause-menu",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-10-pause-menu-20261023-134545.png",
-                         "FileName":  "n12-10-pause-menu-20261023-134545.png",
-                         "Size":  621007
-                     },
-                     {
-                         "SHA256":  "EC7B7111A2A121A191319938009D4905B5771C330900B2B9825CACED104CBF32",
-                         "Description":  "Gameplay resumed after pause",
-                         "Stage":  "11-gameplay-resumed",
-                         "Path":  "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-11-gameplay-resumed-20261023-134547.png",
-                         "FileName":  "n12-11-gameplay-resumed-20261023-134547.png",
-                         "Size":  622772
-                     }
-                 ],
-    "StabilityAudit":  {
-                           "InvalidTextureWarnings":  0,
-                           "D3D12Errors":  0,
-                           "FatalTraps":  0,
-                           "DredFaults":  0
-                       },
-    "AudioAudit":  {
-                       "XmaInitialized":  true,
-                       "BinkSoundThreads":  1,
-                       "BufferUnderruns":  0,
-                       "XmaRegister0601Writes":  0,
-                       "BinkIoThreads":  1
-                   }
+  "Timestamp": "2026-10-24T22:36:35.4806993-03:00",
+  "SavePersistence": {
+    "DeviceSelectorTriggered": true,
+    "FinalSize": 3146752,
+    "FinalHash": "8056DE75A7AF2232F905562153753001297F404AF0F0681BF3129274F746C9E2",
+    "InitialHash": "8056DE75A7AF2232F905562153753001297F404AF0F0681BF3129274F746C9E2",
+    "SaveMountCount": 2,
+    "ItemsEnumerated": 1,
+    "InitialSize": 3146752
+  },
+  "RunId": "20261024-223402",
+  "AudioAudit": {
+    "BinkSoundThreads": 3,
+    "BufferUnderruns": 0,
+    "BinkIoThreads": 4,
+    "XmaInitialized": true,
+    "XmaRegister0601Writes": 0
+  },
+  "StabilityAudit": {
+    "DarkGameplayFrames": 0,
+    "FatalTraps": 0,
+    "D3D12Errors": 0,
+    "InvalidTextureWarnings": 0,
+    "DredFaults": 0
+  },
+  "Captures": [
+    {
+      "FileName": "n12-01-title-boot-20261024-223459.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-01-title-boot-20261024-223459.png",
+      "Stage": "01-title-boot",
+      "Size": 632177,
+      "SHA256": "59CE9192B17700B8E974D19C7671E637202A5977BE3719A190C5D27B8F7C64CC",
+      "Description": "Title screen waiting for Start input"
+    },
+    {
+      "FileName": "n12-02-save-enumerated-menu-20261024-223503.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-02-save-enumerated-menu-20261024-223503.png",
+      "Stage": "02-save-enumerated-menu",
+      "Size": 729857,
+      "SHA256": "5AB78122F95C08DDEDC2B27355B5705E0C2F41869C6DB894DA111D2AA7A0FAD2",
+      "Description": "Main Menu after savegame detection"
+    },
+    {
+      "FileName": "n12-03-menu-navigation-20261024-223504.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-03-menu-navigation-20261024-223504.png",
+      "Stage": "03-menu-navigation",
+      "Size": 730507,
+      "SHA256": "ACC9F1B63B3FDB67E046AE73811A1F0C45D6C78F15274311B1104CDE1E69A4FE",
+      "Description": "Menu selection cursor moved"
+    },
+    {
+      "FileName": "n12-04-campaign-prompt-20261024-223507.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-04-campaign-prompt-20261024-223507.png",
+      "Stage": "04-campaign-prompt",
+      "Size": 942387,
+      "SHA256": "0F0E2397F116E6C48B0403DEE8E63AC128FFB9665E02CF3BBCF1EE18A8C917F7",
+      "Description": "Campaign selection prompt"
+    },
+    {
+      "FileName": "n12-05-prologue-cinematic-20261024-223512.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-05-prologue-cinematic-20261024-223512.png",
+      "Stage": "05-prologue-cinematic",
+      "Size": 927857,
+      "SHA256": "0D81EC8A3D07ED994837780F90F662E4424ACDDCE9C7B2848924532C13D6EC38",
+      "Description": "Prologue cutscene with audio sync"
+    },
+    {
+      "FileName": "n12-06-gameplay-active-20261024-223621.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-06-gameplay-active-20261024-223621.png",
+      "Stage": "06-gameplay-active",
+      "Size": 1228836,
+      "SHA256": "413086B9AAA1F10CBF7D84C73457D69F9D87184DE4CAF1C8C602376430B0FE81",
+      "Description": "3D gameplay scene active"
+    },
+    {
+      "FileName": "n12-07-physics-movement-20261024-223624.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-07-physics-movement-20261024-223624.png",
+      "Stage": "07-physics-movement",
+      "Size": 882686,
+      "SHA256": "4AC8B60260F943C0A077C323F7CF1DB704E54A73BA651248C6C4C6341FA721A0",
+      "Description": "Bryce moving with character collision"
+    },
+    {
+      "FileName": "n12-08-camera-yaw-20261024-223627.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-08-camera-yaw-20261024-223627.png",
+      "Stage": "08-camera-yaw",
+      "Size": 1043460,
+      "SHA256": "2BEAEAA57C4A38E1469F89FC41362802826A30F9773CDCF36D5A9B5C4D77ED87",
+      "Description": "Camera perspective rotation"
+    },
+    {
+      "FileName": "n12-09-action-roll-20261024-223627.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-09-action-roll-20261024-223627.png",
+      "Stage": "09-action-roll",
+      "Size": 888892,
+      "SHA256": "FA196A923612B870D825762DF6C77E723A3859AC2C59608E9EE47EE2E011F16F",
+      "Description": "Character roll/jump state"
+    },
+    {
+      "FileName": "n12-10-pause-menu-20261024-223630.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-10-pause-menu-20261024-223630.png",
+      "Stage": "10-pause-menu",
+      "Size": 1282698,
+      "SHA256": "E220871089564D1EB088D98C2F7A2815EE3F15C7ED0A2766989BDCC182DBFCB3",
+      "Description": "In-game pause menu opened"
+    },
+    {
+      "FileName": "n12-11-gameplay-resumed-20261024-223633.png",
+      "Path": "C:\\projetos\\neverdead\\analysis\\n12-validation\\n12-11-gameplay-resumed-20261024-223633.png",
+      "Stage": "11-gameplay-resumed",
+      "Size": 1430408,
+      "SHA256": "D8DB6DF65DDDD02FCE09FFD57F45BA4F7F09C1ADCB3069EE253C613779ED5CA7",
+      "Description": "Gameplay resumed after pause"
+    }
+  ]
 }

@@ -1,0 +1,71 @@
+﻿{
+  "Passed": false,
+  "HypothesisSupported": false,
+  "Hypothesis": "RTV fixed16 full-range alpha scaling causes the dark blend regression.",
+  "Variants": [
+    {
+      "Name": "full_range",
+      "Profile": "C:\\projetos\\neverdead\\analysis\\n13-benchmarks\\n15-rtv-fixed16-full_range\\n13_warm_rtv_profile.json",
+      "GameplayGatePassed": false,
+      "PerformanceGatePassed": false,
+      "VisualGatePassed": false,
+      "Snorm16FullRange": true,
+      "LuminanceDeltaPercent": 97.59369823549122,
+      "MaximumAverageChannelDelta": 78.6191467221644,
+      "LuminanceHistogramDistance": 0.6087408949011446,
+      "CaptureMetrics": {
+        "width": 1120,
+        "height": 640,
+        "non_black_ratio": 0.01040582726326743,
+        "average_luminance": 1.4689386056191431,
+        "average_rgb": [
+          1.5920915712799169,
+          1.4235171696149844,
+          1.379812695109261
+        ],
+        "luminance_histogram": [
+          0.991675338189386,
+          0.001040582726326743,
+          0.0,
+          0.002081165452653486,
+          0.0,
+          0.001040582726326743,
+          0.004162330905306972,
+          0.0
+        ]
+      }
+    },
+    {
+      "Name": "limited_range",
+      "Profile": "C:\\projetos\\neverdead\\analysis\\n13-benchmarks\\n15-rtv-fixed16-limited_range\\n13_warm_rtv_profile.json",
+      "GameplayGatePassed": true,
+      "PerformanceGatePassed": true,
+      "VisualGatePassed": false,
+      "Snorm16FullRange": false,
+      "LuminanceDeltaPercent": 316.02843631108243,
+      "MaximumAverageChannelDelta": 216.35171696149843,
+      "LuminanceHistogramDistance": 0.9771071800208116,
+      "CaptureMetrics": {
+        "width": 1120,
+        "height": 640,
+        "non_black_ratio": 0.9989594172736732,
+        "average_luminance": 253.96658064516132,
+        "average_rgb": [
+          254.28720083246617,
+          254.25390218522372,
+          251.6462018730489
+        ],
+        "luminance_histogram": [
+          0.001040582726326743,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.008324661810613945,
+          0.9906347554630593
+        ]
+      }
+    }
+  ]
+}

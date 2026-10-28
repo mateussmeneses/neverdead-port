@@ -1,0 +1,7 @@
+frame_time_us,fps,swap_cpu_time_us,gpu_time_us,present_time_us,draw_calls,command_buffer_stalls,vertices_processed,xma_frames_decoded,audio_frame_latency_us,buffer_queue_depth,functions_dispatched,interrupt_dispatches,active_threads,apc_queue_depth,critical_region_contentions,texture_cache_hits,texture_cache_misses,pipeline_cache_hits,pipeline_cache_misses
+0,0,0,0,234,25,0,28,0,0,8,37,15,27,0,0,0,1,2,0
+14204,70,1964,0,176,51,0,60,0,0,8,3,2,27,0,0,1,2,3,0
+51052,19,3125,0,103,49,0,52,0,0,8,14,4,27,0,0,1,0,2,0
+34226,29,691,289,160,51,0,60,0,0,8,10,3,27,0,0,3,0,3,0
+31242,32,159,228,156,51,0,60,0,0,8,9,3,27,0,0,3,0,3,0
+34808,28,169,123,150,51,0,60,0,0,8,9,3,27,0,0,3,0,3,0

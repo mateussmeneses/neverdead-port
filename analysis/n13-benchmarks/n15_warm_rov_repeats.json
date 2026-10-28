@@ -1,0 +1,358 @@
+{
+  "passed": true,
+  "runs": [
+    {
+      "scenario": "warm",
+      "run": "warm_rov_01",
+      "render_target_path": "rov",
+      "measurement_window": {
+        "gameplay_csv_start_byte": 203847,
+        "gameplay_csv_end_byte": 264973,
+        "requested_seconds": 30
+      },
+      "frames_captured": 922,
+      "frametime_ms": {
+        "mean": 33.32282429501085,
+        "p50": 33.2875,
+        "p95": 35.065900000000006,
+        "p99": 35.64901,
+        "max": 36.981,
+        "stutters_gt_33ms": 451,
+        "stutters_gt_50ms": 0,
+        "stutters_gt_100ms": 0
+      },
+      "fps": {
+        "median": 30.0,
+        "min": 27.0,
+        "p1_low": 28.0
+      },
+      "timing_breakdown_ms": {
+        "swap_cpu": {
+          "p50": 0.3035,
+          "p95": 0.3719000000000001,
+          "p99": 0.47273999999999977,
+          "max": 0.689
+        },
+        "gpu": {
+          "p50": 11.147,
+          "p95": 13.293750000000001,
+          "p99": 14.39179,
+          "max": 15.177
+        },
+        "present_call": {
+          "p50": 0.109,
+          "p95": 0.16,
+          "p99": 0.18278999999999995,
+          "max": 0.328
+        }
+      },
+      "memory_mb": {
+        "peak_rss": 788.078125,
+        "avg_rss": 785.3662109375,
+        "peak_commit": 1392.13671875,
+        "rss_growth": 3.712109375,
+        "commit_growth": 5.453125
+      },
+      "cpu": {
+        "avg_percent": 133.49090584354764,
+        "peak_percent": 148.02870541830725
+      },
+      "gpu_and_caches": {
+        "total_draw_calls": 307064,
+        "total_vertices": 561056463,
+        "command_buffer_stalls": 0,
+        "texture_cache_hit_rate_pct": 99.99086063271302,
+        "pipeline_cache_hit_rate_pct": 99.99831338916016,
+        "pipeline_creations_logged": 105,
+        "shader_cache_files_start": 3,
+        "shader_cache_files_end": 3,
+        "shader_cache_files_new": 0,
+        "shader_cache_bytes_new": 0
+      },
+      "ppc_and_system": {
+        "total_functions_dispatched": 10371,
+        "total_interrupt_dispatches": 4610,
+        "max_active_threads": 36,
+        "max_critical_contentions": 0,
+        "total_xma_frames": 48
+      },
+      "audio": {
+        "latency_us_p95": 0.0,
+        "latency_us_max": 0,
+        "queue_depth_max": 8
+      },
+      "stability_actions": {
+        "combat": 10,
+        "pause_resume": 0,
+        "focus_cycles": 0
+      },
+      "log_health": {
+        "fatal_crashes": 0,
+        "d3d12_errors": 0,
+        "d3d12_warnings": 6,
+        "invalid_texture_warnings": 6
+      },
+      "gameplay_gate": {
+        "passed": true,
+        "average_draw_calls_per_frame": 333.0412147505423,
+        "minimum_average_draw_calls_per_frame": 100,
+        "capture": "C:\\projetos\\neverdead\\analysis\\n13-benchmarks\\n13-warm_rov_01-gameplay-20261025-094351.bmp",
+        "capture_metrics": {
+          "width": 1120,
+          "height": 640,
+          "non_black_ratio": 0.9444444444444444,
+          "average_luminance": 55.78710416666669,
+          "average_rgb": [
+            72.75,
+            51.895833333333336,
+            31.333333333333332
+          ]
+        }
+      },
+      "performance_gate": {
+        "passed": true,
+        "stability_mode": false,
+        "minimum_1_percent_low_fps": 26.0,
+        "maximum_frames_over_50ms": 1
+      },
+      "visual_gate": null
+    },
+    {
+      "scenario": "warm",
+      "run": "warm_rov_02",
+      "render_target_path": "rov",
+      "measurement_window": {
+        "gameplay_csv_start_byte": 203315,
+        "gameplay_csv_end_byte": 264887,
+        "requested_seconds": 30
+      },
+      "frames_captured": 923,
+      "frametime_ms": {
+        "mean": 33.32315817984832,
+        "p50": 33.379,
+        "p95": 35.515699999999995,
+        "p99": 36.417719999999996,
+        "max": 37.083,
+        "stutters_gt_33ms": 476,
+        "stutters_gt_50ms": 0,
+        "stutters_gt_100ms": 0
+      },
+      "fps": {
+        "median": 29.0,
+        "min": 26.0,
+        "p1_low": 27.0
+      },
+      "timing_breakdown_ms": {
+        "swap_cpu": {
+          "p50": 0.318,
+          "p95": 0.4186999999999999,
+          "p99": 0.552,
+          "max": 0.709
+        },
+        "gpu": {
+          "p50": 13.092,
+          "p95": 15.113900000000001,
+          "p99": 15.75534,
+          "max": 17.118
+        },
+        "present_call": {
+          "p50": 0.107,
+          "p95": 0.17289999999999997,
+          "p99": 0.22577999999999998,
+          "max": 0.514
+        }
+      },
+      "memory_mb": {
+        "peak_rss": 785.140625,
+        "avg_rss": 783.6029296875,
+        "peak_commit": 1390.4765625,
+        "rss_growth": 2.806640625,
+        "commit_growth": 4.383203125
+      },
+      "cpu": {
+        "avg_percent": 134.76483760253288,
+        "peak_percent": 151.046031708255
+      },
+      "gpu_and_caches": {
+        "total_draw_calls": 325199,
+        "total_vertices": 650304041,
+        "command_buffer_stalls": 0,
+        "texture_cache_hit_rate_pct": 99.99172087195777,
+        "pipeline_cache_hit_rate_pct": 100.0,
+        "pipeline_creations_logged": 103,
+        "shader_cache_files_start": 3,
+        "shader_cache_files_end": 3,
+        "shader_cache_files_new": 0,
+        "shader_cache_bytes_new": 0
+      },
+      "ppc_and_system": {
+        "total_functions_dispatched": 10382,
+        "total_interrupt_dispatches": 4615,
+        "max_active_threads": 36,
+        "max_critical_contentions": 0,
+        "total_xma_frames": 61
+      },
+      "audio": {
+        "latency_us_p95": 0.0,
+        "latency_us_max": 0,
+        "queue_depth_max": 8
+      },
+      "stability_actions": {
+        "combat": 10,
+        "pause_resume": 0,
+        "focus_cycles": 0
+      },
+      "log_health": {
+        "fatal_crashes": 0,
+        "d3d12_errors": 0,
+        "d3d12_warnings": 874,
+        "invalid_texture_warnings": 874
+      },
+      "gameplay_gate": {
+        "passed": true,
+        "average_draw_calls_per_frame": 352.3282773564464,
+        "minimum_average_draw_calls_per_frame": 100,
+        "capture": "C:\\projetos\\neverdead\\analysis\\n13-benchmarks\\n13-warm_rov_02-gameplay-20261025-094612.bmp",
+        "capture_metrics": {
+          "width": 1120,
+          "height": 640,
+          "non_black_ratio": 0.9583333333333334,
+          "average_luminance": 45.37511805555557,
+          "average_rgb": [
+            62.479166666666664,
+            40.02777777777778,
+            28.04861111111111
+          ]
+        }
+      },
+      "performance_gate": {
+        "passed": true,
+        "stability_mode": false,
+        "minimum_1_percent_low_fps": 26.0,
+        "maximum_frames_over_50ms": 1
+      },
+      "visual_gate": null
+    },
+    {
+      "scenario": "warm",
+      "run": "warm_rov_03",
+      "render_target_path": "rov",
+      "measurement_window": {
+        "gameplay_csv_start_byte": 203074,
+        "gameplay_csv_end_byte": 264423,
+        "requested_seconds": 30
+      },
+      "frames_captured": 924,
+      "frametime_ms": {
+        "mean": 33.32523701298701,
+        "p50": 33.329,
+        "p95": 35.21005,
+        "p99": 35.9537,
+        "max": 36.822,
+        "stutters_gt_33ms": 462,
+        "stutters_gt_50ms": 0,
+        "stutters_gt_100ms": 0
+      },
+      "fps": {
+        "median": 30.0,
+        "min": 27.0,
+        "p1_low": 27.0
+      },
+      "timing_breakdown_ms": {
+        "swap_cpu": {
+          "p50": 0.298,
+          "p95": 0.39085000000000003,
+          "p99": 0.472,
+          "max": 0.598
+        },
+        "gpu": {
+          "p50": 13.212,
+          "p95": 14.93735,
+          "p99": 15.564779999999999,
+          "max": 16.391
+        },
+        "present_call": {
+          "p50": 0.101,
+          "p95": 0.158,
+          "p99": 0.22607999999999992,
+          "max": 0.324
+        }
+      },
+      "memory_mb": {
+        "peak_rss": 795.35546875,
+        "avg_rss": 794.11201171875,
+        "peak_commit": 1404.7890625,
+        "rss_growth": 0.80703125,
+        "commit_growth": 1.1484375
+      },
+      "cpu": {
+        "avg_percent": 136.18362965473983,
+        "peak_percent": 149.15186075435562
+      },
+      "gpu_and_caches": {
+        "total_draw_calls": 302938,
+        "total_vertices": 592104336,
+        "command_buffer_stalls": 0,
+        "texture_cache_hit_rate_pct": 99.9952375534783,
+        "pipeline_cache_hit_rate_pct": 99.9982696267585,
+        "pipeline_creations_logged": 105,
+        "shader_cache_files_start": 3,
+        "shader_cache_files_end": 3,
+        "shader_cache_files_new": 0,
+        "shader_cache_bytes_new": 0
+      },
+      "ppc_and_system": {
+        "total_functions_dispatched": 10393,
+        "total_interrupt_dispatches": 4620,
+        "max_active_threads": 36,
+        "max_critical_contentions": 0,
+        "total_xma_frames": 54
+      },
+      "audio": {
+        "latency_us_p95": 0.0,
+        "latency_us_max": 0,
+        "queue_depth_max": 8
+      },
+      "stability_actions": {
+        "combat": 10,
+        "pause_resume": 0,
+        "focus_cycles": 0
+      },
+      "log_health": {
+        "fatal_crashes": 0,
+        "d3d12_errors": 0,
+        "d3d12_warnings": 0,
+        "invalid_texture_warnings": 0
+      },
+      "gameplay_gate": {
+        "passed": true,
+        "average_draw_calls_per_frame": 327.85497835497836,
+        "minimum_average_draw_calls_per_frame": 100,
+        "capture": "C:\\projetos\\neverdead\\analysis\\n13-benchmarks\\n13-warm_rov_03-gameplay-20261025-094834.bmp",
+        "capture_metrics": {
+          "width": 1120,
+          "height": 640,
+          "non_black_ratio": 0.8888888888888888,
+          "average_luminance": 52.50240972222222,
+          "average_rgb": [
+            70.01388888888889,
+            47.951388888888886,
+            30.006944444444443
+          ]
+        }
+      },
+      "performance_gate": {
+        "passed": true,
+        "stability_mode": false,
+        "minimum_1_percent_low_fps": 26.0,
+        "maximum_frames_over_50ms": 1
+      },
+      "visual_gate": null
+    }
+  ],
+  "summary": {
+    "minimum_1_percent_low_fps": 27.0,
+    "maximum_frames_over_50ms": 0,
+    "maximum_p95_frametime_ms": 35.515699999999995
+  }
+}

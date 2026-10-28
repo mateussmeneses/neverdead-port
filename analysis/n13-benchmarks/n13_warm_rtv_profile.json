@@ -1,0 +1,93 @@
+{
+  "scenario": "warm",
+  "run": "warm_rtv",
+  "render_target_path": "rtv",
+  "measurement_window": {
+    "gameplay_csv_start_byte": 0,
+    "gameplay_csv_end_byte": 0,
+    "requested_seconds": 15
+  },
+  "frames_captured": 0,
+  "frametime_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "stutters_gt_33ms": 0,
+    "stutters_gt_50ms": 0,
+    "stutters_gt_100ms": 0
+  },
+  "fps": {
+    "median": 0.0,
+    "min": 0.0,
+    "p1_low": 0.0
+  },
+  "timing_breakdown_ms": {
+    "swap_cpu": {
+      "p50": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    },
+    "gpu": {
+      "p50": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    },
+    "present_call": {
+      "p50": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    }
+  },
+  "memory_mb": {
+    "peak_rss": 784.75390625,
+    "avg_rss": 758.832275390625,
+    "peak_commit": 1619.8125
+  },
+  "cpu": {
+    "avg_percent": 140.376126745878,
+    "peak_percent": 150.93842306808514
+  },
+  "gpu_and_caches": {
+    "total_draw_calls": 0,
+    "total_vertices": 0,
+    "command_buffer_stalls": 0,
+    "texture_cache_hit_rate_pct": 0.0,
+    "pipeline_cache_hit_rate_pct": 0.0,
+    "pipeline_creations_logged": 386,
+    "shader_cache_files_start": 3,
+    "shader_cache_files_end": 3,
+    "shader_cache_files_new": 0,
+    "shader_cache_bytes_new": 0
+  },
+  "ppc_and_system": {
+    "total_functions_dispatched": 0,
+    "total_interrupt_dispatches": 0,
+    "max_active_threads": 0,
+    "max_critical_contentions": 0,
+    "total_xma_frames": 0
+  },
+  "log_health": {
+    "fatal_crashes": 0,
+    "d3d12_errors": 0,
+    "d3d12_warnings": 0,
+    "invalid_texture_warnings": 0
+  },
+  "gameplay_gate": {
+    "passed": false,
+    "average_draw_calls_per_frame": 0.0,
+    "minimum_average_draw_calls_per_frame": 100,
+    "capture": null,
+    "capture_metrics": null
+  },
+  "performance_gate": {
+    "passed": false,
+    "minimum_1_percent_low_fps": 26.0,
+    "maximum_frames_over_50ms": 1
+  },
+  "visual_gate": null
+}

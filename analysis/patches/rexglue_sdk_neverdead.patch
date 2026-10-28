@@ -487,6 +487,33 @@ index 80c3634..c704193 100644
  }
  
  // https://msdn.microsoft.com/en-us/library/windows/desktop/microsoft.directx_sdk.reference.xinputsetstate(v=vs.85).aspx
+diff --git a/src/kernel/xboxkrnl/xboxkrnl_io.cpp b/src/kernel/xboxkrnl/xboxkrnl_io.cpp
+index 3f1a852..40e9434 100644
+--- a/src/kernel/xboxkrnl/xboxkrnl_io.cpp
++++ b/src/kernel/xboxkrnl/xboxkrnl_io.cpp
+@@ -172,6 +172,10 @@ u32 NtCreateFile_entry(mapped_u32 handle_out, u32 desired_access,
+     REXKRNL_IMPORT_FAIL("NtCreateFile", "path='{}' -> {:#x}", target_path, result);
+   } else {
+     REXKRNL_IMPORT_RESULT("NtCreateFile", "{:#x} handle={:#x}", result, handle);
++    if (std::filesystem::path(target_path).extension() == ".sav") {
++      REXKRNL_DEBUG("Opened save file: path='{}' access={:#x} action={}", target_path,
++                    (uint32_t)desired_access, static_cast<uint32_t>(file_action));
++    }
+   }
+   return result;
+ }
+@@ -216,6 +220,11 @@ u32 NtReadFile_entry(u32 file_handle, u32 event_handle, mapped_void apc_routine_
+       result = file->Read(buffer.guest_address(), buffer_length,
+                           byte_offset_ptr ? static_cast<uint64_t>(*byte_offset_ptr) : -1,
+                           &bytes_read, apc_context.guest_address());
++      if (XSUCCEEDED(result) && bytes_read != 0 &&
++          std::filesystem::path(file->path()).extension() == ".sav") {
++        REXKRNL_DEBUG("Read save file: path='{}' bytes={} offset={}", file->path(), bytes_read,
++                      byte_offset_ptr ? static_cast<int64_t>(*byte_offset_ptr) : -1);
++      }
+       if (io_status_block) {
+         io_status_block->status = result;
+         io_status_block->information = bytes_read;
 diff --git a/src/kernel/xboxkrnl/xboxkrnl_io_info.cpp b/src/kernel/xboxkrnl/xboxkrnl_io_info.cpp
 index bd5de65..f0ea1b4 100644
 --- a/src/kernel/xboxkrnl/xboxkrnl_io_info.cpp

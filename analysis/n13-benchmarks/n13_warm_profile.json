@@ -1,53 +1,84 @@
 {
   "scenario": "warm",
-  "frames_captured": 3953,
+  "run": "warm",
+  "measurement_window": {
+    "gameplay_csv_start_byte": 204447,
+    "gameplay_csv_end_byte": 226322,
+    "requested_seconds": 10
+  },
+  "frames_captured": 326,
   "frametime_ms": {
-    "mean": 33.32220996711359,
-    "p50": 33.318,
-    "p95": 35.4298,
-    "p99": 48.51932,
-    "max": 101.676,
-    "stutters_gt_33ms": 1957,
-    "stutters_gt_50ms": 11,
-    "stutters_gt_100ms": 1
+    "mean": 33.31529141104294,
+    "p50": 33.282,
+    "p95": 35.68475,
+    "p99": 50.39975,
+    "max": 51.13,
+    "stutters_gt_33ms": 151,
+    "stutters_gt_50ms": 6,
+    "stutters_gt_100ms": 0
   },
   "fps": {
     "median": 30.0,
-    "min": 9.0,
-    "p1_low": 20.0
+    "min": 19.0,
+    "p1_low": 19.0
+  },
+  "timing_breakdown_ms": {
+    "swap_cpu": {
+      "p50": 0.6295,
+      "p95": 1.1680000000000001,
+      "p99": 1.43525,
+      "max": 2.846
+    },
+    "gpu": {
+      "p50": 14.907,
+      "p95": 28.37875,
+      "p99": 31.746000000000002,
+      "max": 33.229
+    },
+    "present_call": {
+      "p50": 0.367,
+      "p95": 0.55825,
+      "p99": 0.65,
+      "max": 0.742
+    }
   },
   "memory_mb": {
-    "peak_rss": 762.90625,
-    "avg_rss": 537.2229314325601,
-    "peak_commit": 1363.37890625
+    "peak_rss": 863.4453125,
+    "avg_rss": 861.92578125,
+    "peak_commit": 1469.234375
   },
   "cpu": {
-    "avg_percent": 137.53340350641614,
-    "peak_percent": 147.89910572073936
+    "avg_percent": 163.4533333775119,
+    "peak_percent": 174.44941251629743
   },
   "gpu_and_caches": {
-    "total_draw_calls": 891388,
-    "total_vertices": 1575382289,
+    "total_draw_calls": 108762,
+    "total_vertices": 224076580,
     "command_buffer_stalls": 0,
-    "texture_cache_hit_rate_pct": 99.96618089349563,
-    "pipeline_cache_hit_rate_pct": 99.99968427466841,
-    "pipeline_creations_logged": 139,
+    "texture_cache_hit_rate_pct": 99.99320802132682,
+    "pipeline_cache_hit_rate_pct": 100.0,
+    "pipeline_creations_logged": 660,
     "shader_cache_files_start": 2,
     "shader_cache_files_end": 2,
     "shader_cache_files_new": 0,
     "shader_cache_bytes_new": 0
   },
   "ppc_and_system": {
-    "total_functions_dispatched": 42980,
-    "total_interrupt_dispatches": 18267,
+    "total_functions_dispatched": 3667,
+    "total_interrupt_dispatches": 1630,
     "max_active_threads": 36,
     "max_critical_contentions": 0,
-    "total_xma_frames": 110
+    "total_xma_frames": 12
   },
   "log_health": {
     "fatal_crashes": 0,
     "d3d12_errors": 0,
-    "d3d12_warnings": 0,
-    "invalid_texture_warnings": 0
+    "d3d12_warnings": 448,
+    "invalid_texture_warnings": 448
+  },
+  "gameplay_gate": {
+    "passed": true,
+    "average_draw_calls_per_frame": 333.62576687116564,
+    "minimum_average_draw_calls_per_frame": 100
   }
 }
