@@ -56,7 +56,7 @@ jobs:
 
       - name: Test Gameplay Profiler Safety
         shell: pwsh
-        run: python -m unittest analysis.test_profile_n13
+        run: python -m unittest analysis.test_profile_n13 analysis.test_qa_exit_codes
 
       - name: Test Launcher Without Game Assets
         shell: powershell
@@ -82,9 +82,10 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Verifying that live execution mode correctly handles absent assets on CI runner..."
-          python analysis/qa_smoke_test.py --run-live --seconds 2
-          if ($LASTEXITCODE -ne 0) {
+          python analysis/qa_smoke_test.py --run-live --exe missing-ci-runtime.exe --seconds 2
+          if ($LASTEXITCODE -ne 2) {
             Write-Error "Live test runner guard failed."
             exit 1
           }
           Write-Host "[OK] Live test guard correctly identified absence of retail game dump and skipped."
+          exit 0

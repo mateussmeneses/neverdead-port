@@ -584,7 +584,7 @@ def run_live_test(exe_path: Path, game_data_path: Path, duration_sec: int) -> in
     if not exe_path.exists():
         print(f"  [SKIP] Executable not found at: {exe_path}")
         print("         Build target neverdead.exe before invoking --run-live.")
-        return 0
+        return 2
 
     xex_target = game_data_path / "default.xex"
     if not game_data_path.exists() or not xex_target.exists():
@@ -594,7 +594,7 @@ def run_live_test(exe_path: Path, game_data_path: Path, duration_sec: int) -> in
         else:
             print(f"  [SKIP] Retail game dump not found at {game_data_path}.")
             print("         Live execution requires a legal Xbox 360 copy of NeverDead.")
-            return 0
+            return 2
 
     print(f"  Executable:  {exe_path}")
     print(f"  Game Data:   {game_data_path}")
@@ -631,6 +631,9 @@ def run_live_test(exe_path: Path, game_data_path: Path, duration_sec: int) -> in
         if fail_count > 0:
             print(f"\n[!] Live execution detected {fail_count} failure(s).")
             return 1
+        elif not evaluations or any(r.state != "PASS" for r in evaluations):
+            print("\n[INCONCLUSIVE] Live checks did not all pass.")
+            return 2
         else:
             print("\n[OK] Live execution completed without crashes or fatal errors.")
             return 0
