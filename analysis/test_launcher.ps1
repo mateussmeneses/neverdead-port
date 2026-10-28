@@ -17,6 +17,11 @@ try {
         [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($file)) | Out-Null
         [IO.File]::WriteAllBytes($file, [byte[]]@(1))
     }
+    Expect-Rejection $fixture
+    $xex = Join-Path $fixture 'default.xex'
+    [IO.File]::WriteAllBytes($xex, [Text.Encoding]::ASCII.GetBytes('NOPE'))
+    Expect-Rejection $fixture
+    [IO.File]::WriteAllBytes($xex, [Text.Encoding]::ASCII.GetBytes('XEX2'))
     & $launcher -ValidateOnly -GameFolder $fixture
     . $launcher -ValidateOnly -GameFolder $fixture
     foreach ($root in @('C:\', 'C:\Game folder')) {
@@ -36,6 +41,8 @@ try {
         [IO.File]::WriteAllBytes($file, [byte[]]@())
         Expect-Rejection $fixture
         [IO.File]::WriteAllBytes($file, [byte[]]@(1))
+        [IO.File]::WriteAllBytes($xex, [Text.Encoding]::ASCII.GetBytes('XEX2'))
+        & $launcher -ValidateOnly -GameFolder $fixture
     }
     'PASS: valid spaced path, empty/missing folder, and each empty required file.'
 } finally {

@@ -11,6 +11,13 @@ function Test-GameFolder([string]$Folder) {
             throw "Missing or empty game file: $relative. Select the root of your extracted NeverDead copy."
         }
     }
+    $stream = [IO.File]::OpenRead((Join-Path $Folder 'default.xex'))
+    try {
+        $magic = New-Object byte[] 4
+        if ($stream.Read($magic, 0, 4) -ne 4 -or [Text.Encoding]::ASCII.GetString($magic) -ne 'XEX2') {
+            throw 'default.xex is not an Xbox 360 XEX2 executable. Check your extracted copy.'
+        }
+    } finally { $stream.Dispose() }
 }
 
 function Get-LaunchArguments([string]$Root, [string]$Data, [string]$Log) {
