@@ -1,4 +1,4 @@
-param([switch]$ValidateOnly, [string]$GameFolder)
+param([switch]$ValidateOnly, [string]$GameFolder, [string]$PreviewPath)
 $ErrorActionPreference = 'Stop'
 
 function Test-GameFolder([string]$Folder) {
@@ -27,7 +27,7 @@ if ($ValidateOnly) { Test-GameFolder $GameFolder; return }
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 $data = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'NeverDeadPort'
-[IO.Directory]::CreateDirectory($data) | Out-Null
+if (!$PreviewPath) { [IO.Directory]::CreateDirectory($data) | Out-Null }
 $settings = Join-Path $data 'game-folder.txt'
 $form = New-Object Windows.Forms.Form
 $form.Text = 'NeverDead - Alpha launcher'
@@ -78,5 +78,19 @@ $logs.Text = 'Open logs'
 $logs.SetBounds(365, 100, 160, 35)
 $logs.Add_Click({ $path = Join-Path $data 'logs'; [IO.Directory]::CreateDirectory($path) | Out-Null; Start-Process explorer.exe -ArgumentList ('"' + $path + '"') })
 $form.Controls.AddRange(@($label, $folder, $browse, $play, $saves, $logs))
-[void]$form.ShowDialog()
+if ($PreviewPath) {
+    $form.CreateControl()
+    $bitmap = New-Object Drawing.Bitmap($form.Width, $form.Height)
+    try {
+        $form.DrawToBitmap($bitmap, (New-Object Drawing.Rectangle(0, 0, $form.Width, $form.Height)))
+        $clientOffset = $form.PointToScreen([Drawing.Point]::Empty)
+        foreach ($control in $form.Controls) {
+            $bounds = New-Object Drawing.Rectangle(($control.Left + $clientOffset.X - $form.Left), ($control.Top + $clientOffset.Y - $form.Top), $control.Width, $control.Height)
+            $control.DrawToBitmap($bitmap, $bounds)
+        }
+        $bitmap.Save([IO.Path]::GetFullPath($PreviewPath), [Drawing.Imaging.ImageFormat]::Png)
+    } finally { $bitmap.Dispose() }
+} else {
+    [void]$form.ShowDialog()
+}
 $form.Dispose()
